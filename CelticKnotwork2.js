@@ -1,13 +1,13 @@
 function main() {
 	var svg = document.getElementById('svg1');
 
-	const numCols = 18;
+	const numCols = 17;
 	const numRows = 17;
 
 	drawDots(svg, numRows, numCols);
 	drawSlashLines(svg, numRows, numCols);
 	drawBackslashLines(svg, numRows, numCols);
-	drawHorizontalArcs(svg, numRows, numCols);
+	drawArcs(svg, numRows, numCols);
 }
 
 function rowAndColToPoint(row,col) {
@@ -50,7 +50,7 @@ function drawSlashLines(svg, numRows, numCols) {
 		line.setAttribute("x2", pt2.x);
 		line.setAttribute("y2", pt2.y);
 		line.style.stroke = "white";
-		line.style.strokeWidth = "1";
+		line.style.strokeWidth = "2";
 		svg.appendChild(line);
 	}
 }
@@ -70,7 +70,7 @@ function OLD_drawSlashLines(svg, numRows, numCols) {
 			line.setAttribute("x2", pt2.x);
 			line.setAttribute("y2", pt2.y);
 			line.style.stroke = "white";
-			line.style.strokeWidth = "1";
+			line.style.strokeWidth = "2";
 			svg.appendChild(line);
 		} // end for col
 	} // end for row
@@ -93,46 +93,96 @@ if (col === numCols - 1 && delta === 1) continue;
 			line.setAttribute("x2", pt2.x);
 			line.setAttribute("y2", pt2.y);
 			line.style.stroke = "white";
-			line.style.strokeWidth = "1";
+			line.style.strokeWidth = "2";
 			svg.appendChild(line);
 		} // end for col
 	} // end for row
 }
 
-function drawHorizontalArcs(svg, numRows, numCols) {
+function drawArcs(svg, numRows, numCols) {
+	// Draw the horizontal arcs, above and below our grid.
 	for (let col = 2; col < numCols - 1; col += 2 ) {
 		let startPoint1 = { row: 1, col: col };
 		addUpwardsHorizontalArc(svg, startPoint1);
 		let startPoint2 = { row: numRows, col: col };
 		addDownwardsHorizontalArc(svg, startPoint2);
 	}
+
+	// Draw the vertical arcs, to the left and right of our grid.
+	for (let row = 2; row < numRows - 1; row += 2) {
+		let startPoint1 = { row: row, col: 1 };
+		addBackwardsVerticalArc(svg, startPoint1);
+		let startPoint2 = { row: row, col: numCols };
+		addForwardsVerticalArc(svg, startPoint2);
+	}
 }
 
+/**
+ * Add a horizontal arc that bends upwards.
+ * @param {svg} svg Reference to the SVG object to which the arc must be added.
+ * @param start The leftmost point of the arc, in terms of rows and columns on a grid.
+ * The ending point of the arc will be two columns to the right of the starting point.
+ */
 function addUpwardsHorizontalArc(svg, start) {
 	let pt1 = rowAndColToPoint(start.row, start.col);
 	let pt2 = rowAndColToPoint(start.row, start.col + 2);
 	let ctrl = rowAndColToPoint(start.row - 1, start.col + 1);
-
-	let arc = document.createElementNS("http://www.w3.org/2000/svg", "path");
-	let pathVal =  "M " + pointToString(pt1) + " Q " + pointToString(ctrl) + " " + pointToString(pt2);
-	arc.setAttribute("d", pathVal);
-	arc.style.stroke = "white";
-	arc.style.strokeWidth = "1";
-	arc.style.fill="none";
-	svg.appendChild(arc);
+	addQuadraticBezierCurve(svg, pt1, ctrl, pt2);
 }
 
+/**
+ * Add a horizontal arc that bends downwards.
+ * @param {svg} svg Reference to the SVG object to which the arc must be added.
+ * @param start The leftmost point of the arc, in terms of rows and columns on a grid. Must have a "row" and a "col" attribute.
+ * The ending point of the arc will be two columns to the right of the starting point.
+ */
 function addDownwardsHorizontalArc(svg, start) {
 	let pt1 = rowAndColToPoint(start.row, start.col);
 	let pt2 = rowAndColToPoint(start.row, start.col + 2);
 	let ctrl = rowAndColToPoint(start.row + 1, start.col + 1);
+	addQuadraticBezierCurve(svg, pt1, ctrl, pt2);
+}
 
+/**
+ * Add a vertical arc that bends backwards (towards the left side of the screen).
+ * @param {svg} svg Reference to the SVG object to which the arc must be added.
+ * @param start The uppermost point of the arc, in terms of rows and columns on a grid. Must have a "row" and a "col" attribute.
+ * The ending point of the arc will be two rows below the starting point.
+ */
+function addBackwardsVerticalArc(svg, start) {
+	let pt1 = rowAndColToPoint(start.row, start.col);
+	let pt2 = rowAndColToPoint(start.row + 2, start.col);
+	let ctrl = rowAndColToPoint(start.row + 1, start.col - 1);
+	addQuadraticBezierCurve(svg, pt1, ctrl, pt2);
+}
+
+/**
+ * Add a vertical arc that bends forwards (towards the right side of the screen).
+ * @param {svg} svg Reference to the SVG object to which the arc must be added.
+ * @param start The uppermost point of the arc, in terms of rows and columns on a grid. Must have a "row" and a "col" attribute.
+ * The ending point of the arc will be two rows below the starting point.
+ */
+function addForwardsVerticalArc(svg, start) {
+	let pt1 = rowAndColToPoint(start.row, start.col);
+	let pt2 = rowAndColToPoint(start.row + 2, start.col);
+	let ctrl = rowAndColToPoint(start.row + 1, start.col + 1);
+	addQuadraticBezierCurve(svg, pt1, ctrl, pt2);
+}
+
+
+/**
+ * Shorthand function to add a quadratic Bézier curve to an SVG element.
+ * @param {svg} The SVG to which the curve will be added.
+ * @param {startingPoint} Starting point of the curve, in screen coordinates. Must have an "x" attribute and a "y" attribute.
+ * @param {controlPoint} Control point of the curve, in screen coordinates. Must have an "x" attribute and a "y" attribute.
+ * @param {endingPoint} Ending point of the curve, in screen coordinates. Must have an "x" attribute and a "y" attribute.
+ */
+function addQuadraticBezierCurve(svg, startingPoint, controlPoint, endingPoint) {
 	let arc = document.createElementNS("http://www.w3.org/2000/svg", "path");
-	let pathVal =  "M " + pointToString(pt1) + " Q " + pointToString(ctrl) + " " + pointToString(pt2);
+	let pathVal =  "M " + pointToString(startingPoint) + " Q " + pointToString(controlPoint) + " " + pointToString(endingPoint);
 	arc.setAttribute("d", pathVal);
 	arc.style.stroke = "white";
-	arc.style.strokeWidth = "1";
+	arc.style.strokeWidth = "2";
 	arc.style.fill="none";
 	svg.appendChild(arc);
 }
-
