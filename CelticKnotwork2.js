@@ -111,6 +111,14 @@ function drawBackslashLines(svg, numRows, numCols) {
 	let end = numRows + numCols - 2;
 
 	for(let idx = start; idx < end; idx += 2) {
+
+		//TODO!~ We still have an off-by-one error here.
+		// Compensate for it for the rows, and it returns in the columns.
+		// Compensate for it in the columns, and it returns in the rows.
+		// So, the algorithm still needs a it of fine-tuning.
+		// Perhaps trying different rectangles will help us find the problem. (E.g. 17 rows, 8 columns - or vice versa. Anything that's NOT a square).
+
+		// Determine the starting point and ending point for the entire diagonal.
 		let startingPointRowIdx = Math.max(numRows - idx, 1);
 
 		let startingPointColIdx = Math.max(1, idx - numRows + 2); //TODO?~ Is this correct?
@@ -120,26 +128,17 @@ function drawBackslashLines(svg, numRows, numCols) {
 			endingPointRowIdx = numRows + numCols - idx; //TODO?~ Is this correct?
 		}
 
-
-		//TODO!- testing code.
-		let testPos1 = rowAndColToPoint(startingPointRowIdx, startingPointColIdx);
-		drawDot(svg, testPos1.x, testPos1.y, 2, "red");
-
+		// Draw the diagonal as a series of smaller diagonals.
+		// (We do this so we can remove individual parts of the diagonal later).
 		let n = endingPointRowIdx - startingPointRowIdx;
-console.log("n=="+n);
-		for (let i = 0; i < n; i++) {
+		for (let i = 0; i < n - 1; i++) {
 			let curRow = startingPointRowIdx + i;
-			let curCol = startingPointRowIdx + i;
+			let curCol = startingPointColIdx + i;
 			let startingPoint = rowAndColToPoint(curRow, curCol);
 			let endingPoint = rowAndColToPoint(curRow + 1, curCol + 1);
 		
 			drawLine(svg, startingPoint.x, startingPoint.y, endingPoint.x, endingPoint.y, 2, "yellow");
 		}
-
-let endingPointColIdx = idx+1;
-let pt1 = rowAndColToPoint(startingPointRowIdx, startingPointColIdx);
-let pt2 = rowAndColToPoint(endingPointRowIdx, endingPointColIdx);
-drawLine(svg, pt1.x, pt1.y, pt2.x, pt2.y, 2, "red");
 	}
 }
 
