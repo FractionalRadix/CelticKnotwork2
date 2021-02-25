@@ -32,36 +32,56 @@ function pointToString(p) {
 function drawDots(svg, numRows, numCols) {
 	for (let row = 1; row <= numRows; row++) {
 		for (let col = 1; col <= numCols; col++) {
-			let circle = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
 			const point = rowAndColToPoint(row, col);
-			circle.setAttribute("cx", point.x);
-			circle.setAttribute("cy", point.y);
-			circle.setAttribute("r", 2);
-			circle.setAttribute("fill", "white");
-			svg.appendChild(circle);
+			drawDot(svg, point.x, point.y, 2, "white");
 		} // end for col
 	} // end for row
 }
 
+/**
+ * Auxiliary function to draw a dot (a small filled circle).
+ * @param {svg} svg The SVG object for the dot.
+ * @param {integer} cx x-coordinate of the center of the dot.
+ * @param {integer} cy y-coordinate of the center of the dot.
+ * @param {integer} r Radius of the dot.
+ * @param {string} color Color of the dot.
+ */
+function drawDot(svg, cx, cy, r, color) {
+	let circle = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
+	circle.setAttribute("cx", cx);
+	circle.setAttribute("cy", cy);
+	circle.setAttribute("r", r);
+	circle.setAttribute("fill", color);
+	svg.appendChild(circle);
+}
+
+/**
+ * Auxiliary function to add a line.
+ //TODO!+ Add the obvious parameters...
+ */
+function drawLine(svg, x1, y1, x2, y2, width, color) {
+	let lineSegment = document.createElementNS("http://www.w3.org/2000/svg", "line");
+	lineSegment.setAttribute("x1", x1);
+	lineSegment.setAttribute("y1", y1);
+	lineSegment.setAttribute("x2", x2);
+	lineSegment.setAttribute("y2", y2);
+	lineSegment.style.stroke = color;
+	lineSegment.style.strokeWidth = width;
+	svg.appendChild(lineSegment);
+}
+
 function drawSlashLines(svg, numRows, numCols) {
-	console.log("numRows=="+numRows+", numCols=="+numCols);
 	let start = 4;
 	let end = numRows + numCols - 2;
 
-
 	for(let idx = start; idx < end; idx += 2) {
 
-		//TODO!+ Now that the starting points and ending points are determined, the lines should be built from smaller line segments, that can be removed individually. (So, a nested for loop).
-
+		// Determine the starting point and ending point for the entire diagonal.
 		let startingPointColIdx = 1;
 		if (idx > numRows) {
 			startingPointColIdx = idx - numRows + 1;
 		}
 
-		//let startingPointRowIdx = idx;
-		//if (startingPointRowIdx >= numRows) {
-		//	startingPointRowIdx = numRows;
-		//}
 		let startingPointRowIdx = Math.min(idx, numRows);
 
 		let endingPointRowIdx = 1;
@@ -69,23 +89,57 @@ function drawSlashLines(svg, numRows, numCols) {
 			endingPointRowIdx = idx - numCols + 1;
 		}
 
-		//let endingPointColIdx = idx;
-		//if (endingPointColIdx >= numCols) {
-		//	endingPointColIdx = numCols;
-		//}
 		let endingPointColIdx = Math.min(idx, numCols);
 
-		let pt1 = rowAndColToPoint(startingPointRowIdx, startingPointColIdx);
-		let pt2 = rowAndColToPoint(endingPointRowIdx, endingPointColIdx);
+		// Draw the diagonal as a series of smaller diagonals.
+		// (We do this so we can remove individual parts of the diagonal later).
+		let n = endingPointColIdx - startingPointColIdx;
+		for (let i = 0; i < n; i++ ) {
+			let curRow = startingPointRowIdx - i;
+			let curCol = startingPointColIdx + i;
 
-		let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-		line.setAttribute("x1", pt1.x);
-		line.setAttribute("y1", pt1.y);
-		line.setAttribute("x2", pt2.x);
-		line.setAttribute("y2", pt2.y);
-		line.style.stroke = "white";
-		line.style.strokeWidth = "2";
-		svg.appendChild(line);
+			let ptStart = rowAndColToPoint(curRow, curCol);
+			let ptEnd   = rowAndColToPoint(curRow - 1, curCol + 1);
+
+			drawLine(svg, ptStart.x, ptStart.y, ptEnd.x, ptEnd.y, 2, "yellow");
+		}
+	}
+}
+
+function drawBackslashLines(svg, numRows, numCols) {
+	let start = 1
+	let end = numRows + numCols - 2;
+
+	for(let idx = start; idx < end; idx += 2) {
+		let startingPointRowIdx = Math.max(numRows - idx, 1);
+
+		let startingPointColIdx = Math.max(1, idx - numRows + 2); //TODO?~ Is this correct?
+
+		let endingPointRowIdx = numRows;
+		if (idx > numCols) {
+			endingPointRowIdx = numRows + numCols - idx; //TODO?~ Is this correct?
+		}
+
+
+		//TODO!- testing code.
+		let testPos1 = rowAndColToPoint(startingPointRowIdx, startingPointColIdx);
+		drawDot(svg, testPos1.x, testPos1.y, 2, "red");
+
+		let n = endingPointRowIdx - startingPointRowIdx;
+console.log("n=="+n);
+		for (let i = 0; i < n; i++) {
+			let curRow = startingPointRowIdx + i;
+			let curCol = startingPointRowIdx + i;
+			let startingPoint = rowAndColToPoint(curRow, curCol);
+			let endingPoint = rowAndColToPoint(curRow + 1, curCol + 1);
+		
+			drawLine(svg, startingPoint.x, startingPoint.y, endingPoint.x, endingPoint.y, 2, "yellow");
+		}
+
+let endingPointColIdx = idx+1;
+let pt1 = rowAndColToPoint(startingPointRowIdx, startingPointColIdx);
+let pt2 = rowAndColToPoint(endingPointRowIdx, endingPointColIdx);
+drawLine(svg, pt1.x, pt1.y, pt2.x, pt2.y, 2, "red");
 	}
 }
 
@@ -93,7 +147,7 @@ function drawSlashLines(svg, numRows, numCols) {
 /**
  * Draw the "\" diagonal lines.
  */
-function drawBackslashLines(svg, numRows, numCols) {
+function OLD_drawBackslashLines(svg, numRows, numCols) {
 	for (let row = 1; row <= numRows - 1; row += 1) {
 		for (let col = 0; col <= numCols - 1; col += 2) {
 			let delta =  (row % 2 == 1) ? 0 : 1;
