@@ -1,14 +1,13 @@
 function main() {
 	var svg = document.getElementById('svg1');
 
-	const numCols = 18;
-	const numRows = 9;
+	const numRows = 17;
+	const numCols = 17;
 
 	//TODO!+ Find a way to store the lines and arcs into a data structure.
 	// This allows us to add the break/rejoin function.
 	// When the user clicks on a part where two lines cross, we find those lines back in the SVG.
 	// We then remove those lines (break), and replace them with a set of arcs (rejoin).
-
 
 	drawDots(svg, numRows, numCols);
 	drawSlashLines(svg, numRows, numCols);
@@ -47,39 +46,39 @@ function drawDots(svg, numRows, numCols) {
 function drawSlashLines(svg, numRows, numCols) {
 	console.log("numRows=="+numRows+", numCols=="+numCols);
 	let start = 4;
-	let end = 2 * Math.max(numRows, numCols);
+	let end = numRows + numCols - 2;
 
-	// Curious: if you try to print the same multiple times, JavaScript prints it only ONCE?
-	// If you print something else in-between it WILL print the earlier text again.
-	// Way to confuse me while I'm debugging, JavaScript...
-	for (let tmp = 1; tmp < 5; tmp++) {
-		console.log("Test");
-	}
 
 	for(let idx = start; idx < end; idx += 2) {
-		let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
 
-		console.log(idx);
-
-		//TODO!~ Still need to correct a few things about these (row,col) coordinates for starting point and ending point.
-		//TODO!+ After this is done, the lines should be built from smaller line segments, that can be removed individually. (So, a nested for loop).
+		//TODO!+ Now that the starting points and ending points are determined, the lines should be built from smaller line segments, that can be removed individually. (So, a nested for loop).
 
 		let startingPointColIdx = 1;
-		let startingPointRowIdx = idx;
-		if (startingPointRowIdx > numRows) {
-			startingPointColIdx = startingPointRowIdx - numRows;
+		if (idx > numRows) {
+			startingPointColIdx = idx - numRows + 1;
 		}
+
+		//let startingPointRowIdx = idx;
+		//if (startingPointRowIdx >= numRows) {
+		//	startingPointRowIdx = numRows;
+		//}
+		let startingPointRowIdx = Math.min(idx, numRows);
 
 		let endingPointRowIdx = 1;
-		let endingPointColIdx = idx;
-		if (endingPointRowIdx > numCols) {
-			endingPointRowIdx = endingPointColIdx - numCols;
+		if (idx > numCols) {
+			endingPointRowIdx = idx - numCols + 1;
 		}
 
+		//let endingPointColIdx = idx;
+		//if (endingPointColIdx >= numCols) {
+		//	endingPointColIdx = numCols;
+		//}
+		let endingPointColIdx = Math.min(idx, numCols);
 
 		let pt1 = rowAndColToPoint(startingPointRowIdx, startingPointColIdx);
 		let pt2 = rowAndColToPoint(endingPointRowIdx, endingPointColIdx);
 
+		let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
 		line.setAttribute("x1", pt1.x);
 		line.setAttribute("y1", pt1.y);
 		line.setAttribute("x2", pt2.x);
@@ -90,27 +89,7 @@ function drawSlashLines(svg, numRows, numCols) {
 	}
 }
 
-/**
- * Draw the "/" diagonal lines.
- */
-function OLD_drawSlashLines(svg, numRows, numCols) {
-	for (let row = 2; row <= numRows; row += 1) {
-		for (let col = 2; col <= numCols; col += 2) {
-			let delta = (row % 2 == 1) ? 1 : 0;
-			let pt1 = rowAndColToPoint(row - 1, col + 1  - 1+ delta);
-			let pt2 = rowAndColToPoint(row - 1 + 1, col - 1  - 1  +  1 + delta);
-			let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-			line.setAttribute("x1", pt1.x);
-			line.setAttribute("y1", pt1.y);
-			line.setAttribute("x2", pt2.x);
-			line.setAttribute("y2", pt2.y);
-			line.style.stroke = "white";
-			line.style.strokeWidth = "2";
-			svg.appendChild(line);
-		} // end for col
-	} // end for row
-}
-
+//TODO!~ Use the same algorithm we used for "slash" diagonal lines.
 /**
  * Draw the "\" diagonal lines.
  */
