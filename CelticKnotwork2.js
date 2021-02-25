@@ -1,8 +1,14 @@
 function main() {
 	var svg = document.getElementById('svg1');
 
-	const numCols = 17;
-	const numRows = 17;
+	const numCols = 18;
+	const numRows = 9;
+
+	//TODO!+ Find a way to store the lines and arcs into a data structure.
+	// This allows us to add the break/rejoin function.
+	// When the user clicks on a part where two lines cross, we find those lines back in the SVG.
+	// We then remove those lines (break), and replace them with a set of arcs (rejoin).
+
 
 	drawDots(svg, numRows, numCols);
 	drawSlashLines(svg, numRows, numCols);
@@ -39,12 +45,41 @@ function drawDots(svg, numRows, numCols) {
 }
 
 function drawSlashLines(svg, numRows, numCols) {
+	console.log("numRows=="+numRows+", numCols=="+numCols);
 	let start = 4;
 	let end = 2 * Math.max(numRows, numCols);
+
+	// Curious: if you try to print the same multiple times, JavaScript prints it only ONCE?
+	// If you print something else in-between it WILL print the earlier text again.
+	// Way to confuse me while I'm debugging, JavaScript...
+	for (let tmp = 1; tmp < 5; tmp++) {
+		console.log("Test");
+	}
+
 	for(let idx = start; idx < end; idx += 2) {
 		let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-		let pt1 = rowAndColToPoint(1, Math.min(idx, numRows));
-		let pt2 = rowAndColToPoint(Math.min(idx, numCols), 1); //TODO!~
+
+		console.log(idx);
+
+		//TODO!~ Still need to correct a few things about these (row,col) coordinates for starting point and ending point.
+		//TODO!+ After this is done, the lines should be built from smaller line segments, that can be removed individually. (So, a nested for loop).
+
+		let startingPointColIdx = 1;
+		let startingPointRowIdx = idx;
+		if (startingPointRowIdx > numRows) {
+			startingPointColIdx = startingPointRowIdx - numRows;
+		}
+
+		let endingPointRowIdx = 1;
+		let endingPointColIdx = idx;
+		if (endingPointRowIdx > numCols) {
+			endingPointRowIdx = endingPointColIdx - numCols;
+		}
+
+
+		let pt1 = rowAndColToPoint(startingPointRowIdx, startingPointColIdx);
+		let pt2 = rowAndColToPoint(endingPointRowIdx, endingPointColIdx);
+
 		line.setAttribute("x1", pt1.x);
 		line.setAttribute("y1", pt1.y);
 		line.setAttribute("x2", pt2.x);
@@ -168,7 +203,6 @@ function addForwardsVerticalArc(svg, start) {
 	let ctrl = rowAndColToPoint(start.row + 1, start.col + 1);
 	addQuadraticBezierCurve(svg, pt1, ctrl, pt2);
 }
-
 
 /**
  * Shorthand function to add a quadratic Bézier curve to an SVG element.
