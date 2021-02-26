@@ -23,7 +23,23 @@ function main() {
 	const widthWithoutPadding  = bBox.width  - 2 * xOffset;
 	const heightWithoutPadding = bBox.height - 2 * yOffset;
 	xScale = widthWithoutPadding / (numCols + 1);
-	yScale = heightWithoutPadding / (numRows + 1); //TODO!~ Deal with 0 division.... numRows must be >= 2.
+	yScale = heightWithoutPadding / (numRows + 1);
+
+	// Source: https://www.petercollingridge.co.uk/tutorials/svg/interactive/dragging/
+    function getMousePosition(evt) {
+      var CTM = svg.getScreenCTM();
+      return {
+        x: (evt.clientX - CTM.e) / CTM.a,
+        y: (evt.clientY - CTM.f) / CTM.d
+      };
+    }
+	document.addEventListener("click", function(event) {
+		var mousePos = getMousePosition(event);
+		console.log(mousePos.x+","+mousePos.y);
+		var gridPos = pointToRowAndCol(mousePos);
+		console.log(gridPos.row + " " + gridPos.col);
+		verticalRejoin(svg, gridPos);
+	});
 
 	//TODO!+ Find a way to store the lines and arcs into a data structure.
 	// This allows us to add the break/rejoin function.
@@ -41,6 +57,22 @@ function rowAndColToPoint(row,col) {
 	var yVal = yOffset + row * yScale;
 	//return { x : xOffset + xScale * col, y : yOffset + 20 * yScale };
 	return { x : xOffset + col * xScale, y : yOffset + row * yScale };
+}
+
+function pointToRowAndCol(point) {
+	var colCoor = ( point.x - xOffset ) / xScale;
+	var rowCoor = ( point.y - yOffset ) / yScale;
+	return { row : Math.round(rowCoor), col: Math.round(colCoor) };
+}
+
+function verticalRejoin(svg, gridPos) {
+console.log("svg=="+svg);
+	topOfLeftArc = { row : gridPos.row - 1, col : gridPos.col - 1 };
+	topOfRightArc = { row: gridPos.row - 1, col : gridPos.col + 1 };
+	addForwardsVerticalArc(svg, topOfLeftArc);
+	addBackwardsVerticalArc(svg, topOfRightArc);
+console.log(topOfLeftArc);
+console.log(topOfRightArc);
 }
 
 /**
