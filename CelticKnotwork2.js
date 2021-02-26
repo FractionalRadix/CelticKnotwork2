@@ -1,8 +1,29 @@
+//TODO?~ See if we can make these static members of rowAndColToPoint.
+var xOffset;
+var xScale;
+var yOffset;
+var yScale;
+
 function main() {
 	var svg = document.getElementById('svg1');
 
+	// Test case values for (numRows,numCols):
+	// (18,8) (18,7) (17,8) (17,7)
+	// (8,18) (7,18) (8,17) (7,17)
+	// (15,15) (18,18)
+	// Note that for the arcs to work properly, you need an ODD number of rows and an ODD number of columns.
 	const numRows = 17;
 	const numCols = 17;
+
+
+	// Automatically scale the grid to the size of the SVG.
+	var bBox = svg1.getBBox();
+	xOffset = 10;
+	yOffset = 10;
+	const widthWithoutPadding  = bBox.width  - 2 * xOffset;
+	const heightWithoutPadding = bBox.height - 2 * yOffset;
+	xScale = widthWithoutPadding / (numCols + 1);
+	yScale = heightWithoutPadding / (numRows + 1); //TODO!~ Deal with 0 division.... numRows must be >= 2.
 
 	//TODO!+ Find a way to store the lines and arcs into a data structure.
 	// This allows us to add the break/rejoin function.
@@ -16,7 +37,10 @@ function main() {
 }
 
 function rowAndColToPoint(row,col) {
-	return { x : 10 + 20 * col, y : 10 + 20 * row };
+	var xVal = xOffset + col * xScale;
+	var yVal = yOffset + row * yScale;
+	//return { x : xOffset + xScale * col, y : yOffset + 20 * yScale };
+	return { x : xOffset + col * xScale, y : yOffset + row * yScale };
 }
 
 /**
@@ -38,37 +62,6 @@ function drawDots(svg, numRows, numCols) {
 	} // end for row
 }
 
-/**
- * Auxiliary function to draw a dot (a small filled circle).
- * @param {svg} svg The SVG object for the dot.
- * @param {integer} cx x-coordinate of the center of the dot.
- * @param {integer} cy y-coordinate of the center of the dot.
- * @param {integer} r Radius of the dot.
- * @param {string} color Color of the dot.
- */
-function drawDot(svg, cx, cy, r, color) {
-	let circle = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
-	circle.setAttribute("cx", cx);
-	circle.setAttribute("cy", cy);
-	circle.setAttribute("r", r);
-	circle.setAttribute("fill", color);
-	svg.appendChild(circle);
-}
-
-/**
- * Auxiliary function to add a line.
- //TODO!+ Add the obvious parameters...
- */
-function drawLine(svg, x1, y1, x2, y2, width, color) {
-	let lineSegment = document.createElementNS("http://www.w3.org/2000/svg", "line");
-	lineSegment.setAttribute("x1", x1);
-	lineSegment.setAttribute("y1", y1);
-	lineSegment.setAttribute("x2", x2);
-	lineSegment.setAttribute("y2", y2);
-	lineSegment.style.stroke = color;
-	lineSegment.style.strokeWidth = width;
-	svg.appendChild(lineSegment);
-}
 
 function drawSlashLines(svg, numRows, numCols) {
 	let start = 4;
@@ -107,16 +100,10 @@ function drawSlashLines(svg, numRows, numCols) {
 }
 
 function drawBackslashLines(svg, numRows, numCols) {
-	let start = 1
-	let end = numRows + numCols - 2;
+	let start = 3
+	let end = numRows + numCols - 3;
 
 	for(let idx = start; idx < end; idx += 2) {
-
-		//TODO!~ We still have an off-by-one error here.
-		// Compensate for it for the rows, and it returns in the columns.
-		// Compensate for it in the columns, and it returns in the rows.
-		// So, the algorithm still needs a it of fine-tuning.
-		// Perhaps trying different rectangles will help us find the problem. (E.g. 17 rows, 8 columns - or vice versa. Anything that's NOT a square).
 
 		// Determine the starting point and ending point for the entire diagonal.
 		let startingPointRowIdx = Math.max(numRows - idx, 1);
@@ -131,39 +118,19 @@ function drawBackslashLines(svg, numRows, numCols) {
 		// Draw the diagonal as a series of smaller diagonals.
 		// (We do this so we can remove individual parts of the diagonal later).
 		let n = endingPointRowIdx - startingPointRowIdx;
-		for (let i = 0; i < n - 1; i++) {
+		for (let i = 0; i < n; i++) {
 			let curRow = startingPointRowIdx + i;
 			let curCol = startingPointColIdx + i;
+
+			if (curCol >= numCols)
+				continue;
+
 			let startingPoint = rowAndColToPoint(curRow, curCol);
 			let endingPoint = rowAndColToPoint(curRow + 1, curCol + 1);
 		
 			drawLine(svg, startingPoint.x, startingPoint.y, endingPoint.x, endingPoint.y, 2, "yellow");
 		}
 	}
-}
-
-//TODO!~ Use the same algorithm we used for "slash" diagonal lines.
-/**
- * Draw the "\" diagonal lines.
- */
-function OLD_drawBackslashLines(svg, numRows, numCols) {
-	for (let row = 1; row <= numRows - 1; row += 1) {
-		for (let col = 0; col <= numCols - 1; col += 2) {
-			let delta =  (row % 2 == 1) ? 0 : 1;
-if (col === 0 && delta === 0) continue;
-if (col === numCols - 1 && delta === 1) continue;
-			let pt1 = rowAndColToPoint(row, col + delta);
-			let pt2 = rowAndColToPoint(row + 1, col+1 + delta);
-			let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-			line.setAttribute("x1", pt1.x);
-			line.setAttribute("y1", pt1.y);
-			line.setAttribute("x2", pt2.x);
-			line.setAttribute("y2", pt2.y);
-			line.style.stroke = "white";
-			line.style.strokeWidth = "2";
-			svg.appendChild(line);
-		} // end for col
-	} // end for row
 }
 
 function drawArcs(svg, numRows, numCols) {
@@ -236,19 +203,3 @@ function addForwardsVerticalArc(svg, start) {
 	addQuadraticBezierCurve(svg, pt1, ctrl, pt2);
 }
 
-/**
- * Shorthand function to add a quadratic Bézier curve to an SVG element.
- * @param {svg} The SVG to which the curve will be added.
- * @param {startingPoint} Starting point of the curve, in screen coordinates. Must have an "x" attribute and a "y" attribute.
- * @param {controlPoint} Control point of the curve, in screen coordinates. Must have an "x" attribute and a "y" attribute.
- * @param {endingPoint} Ending point of the curve, in screen coordinates. Must have an "x" attribute and a "y" attribute.
- */
-function addQuadraticBezierCurve(svg, startingPoint, controlPoint, endingPoint) {
-	let arc = document.createElementNS("http://www.w3.org/2000/svg", "path");
-	let pathVal =  "M " + pointToString(startingPoint) + " Q " + pointToString(controlPoint) + " " + pointToString(endingPoint);
-	arc.setAttribute("d", pathVal);
-	arc.style.stroke = "white";
-	arc.style.strokeWidth = "2";
-	arc.style.fill="none";
-	svg.appendChild(arc);
-}
