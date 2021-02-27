@@ -138,36 +138,31 @@ function erase(svg, gridPos) {
 
 	// Find horizontal arcs surrounding this grid point.
 	// Note that we should still check in which direction they bend!
-	var verticalArcs = findVerticalArcsAroundPoint(svg, gridPos);
+	var verticalArcs = findVerticalArcsAroundPoint(gridPos);
 	verticalArcs.forEach(x => res.push(x));
 
-	var horizontalArcs = findHorizontalArcsAroundPoint(svg, gridPos);
+	var horizontalArcs = findHorizontalArcsAroundPoint(gridPos);
 	horizontalArcs.forEach(x => res.push(x));
 
 	// Remove all the elements we found.
-	res.forEach( id => 
-		{
-			var elt = svg.getElementById(id);
-			svg.removeChild(elt);
-			connections.delete(id);
-		}
-	); 
+	res.forEach( id => {
+		var elt = svg.getElementById(id);
+		svg.removeChild(elt);
+		connections.delete(id);
+	}); 
 }
 
 /**
  * Finds the vertical arcs (if any) that surround the given grid position.
- * @param {Object} svg The SVG element for the grid point.
  * @param {Object} gridPoint The grid point; should have a "row" member and a "col" member, both of which should be integers.
  * @return {Array} An array of IDs, where each ID is the ID of a vertical arc surrounding the given grid point. (So, size of the array varies from 0 to 2, inclusive).
  */
-function findVerticalArcsAroundPoint(svg, gridPoint) {
+function findVerticalArcsAroundPoint(gridPoint) {
 	// Find vertical arcs surrounding this grid point.
 	// Note that we should still check in which direction they bend!
 	var res = [];
 
 	for (let arc of connections) {
-		//console.log(arc[1]);
-		//console.log(gridPoint);
 		let test1 = (arc[1].row1 == gridPoint.row - 1 && arc[1].col1 == gridPoint.col - 1) && (arc[1].row2 == gridPoint.row + 1 && arc[1].col2 == gridPoint.col - 1);
 		let test2 = (arc[1].row1 == gridPoint.row + 1 && arc[1].col1 == gridPoint.col - 1) && (arc[1].row2 == gridPoint.row - 1 && arc[1].col2 == gridPoint.col - 1);
 		if (test1 || test2) {
@@ -190,11 +185,10 @@ function findVerticalArcsAroundPoint(svg, gridPoint) {
 
 /**
  * Finds the horizontal arcs (if any) that surround the given grid position.
- * @param {Object} svg The SVG element for the grid point.
  * @param {Object} gridPoint The grid point; should have a "row" member and a "col" member, both of which should be integers.
  * @return {Array} An array of IDs, where each ID is the ID of a horizontal arc surrounding the given grid point. (So, size of the array varies from 0 to 2, inclusive).
  */
-function findHorizontalArcsAroundPoint(svg, gridPoint) {
+function findHorizontalArcsAroundPoint(gridPoint) {
 	// Find vertical arcs surrounding this grid point.
 	// Note that we should still check in which direction they bend!
 	var res = [];
@@ -226,9 +220,18 @@ function verticalRejoin(svg, gridPos) {
 	let topOfLeftArc = { row : gridPos.row - 1, col : gridPos.col - 1 };
 	let topOfRightArc = { row: gridPos.row - 1, col : gridPos.col + 1 };
 
-	//TODO!+ Do these vertical arcs already exist? If so, leave.
+	// Do these vertical arcs already exist? If so, leave.
+	var existingVerticalArcs = findVerticalArcsAroundPoint(gridPos);
+	if (existingVerticalArcs !== null && existingVerticalArcs.length > 0)
+		return;
 
-	//TODO!+. Are there already horizontal arcs in this story? If so, remove them.
+	// Are there already horizontal arcs in this story? If so, remove them.
+	var existingHorizontalArcs = findHorizontalArcsAroundPoint(gridPos);
+	existingHorizontalArcs.forEach( id => {
+		var elt = svg.getElementById(id);
+		svg.removeChild(elt);
+		connections.delete(id);
+	});
 
 	// Remove any diagonal lines.
 	var lineIDs = [];
@@ -257,9 +260,19 @@ function horizontalRejoin(svg, gridPos) {
 	let startOfTopArc = { row: gridPos.row - 1, col: gridPos.col - 1 };
 	let startOfBottomArc = { row: gridPos.row + 1, col: gridPos.col - 1 };
 
-	//TODO!+ Do these horizontal arcs already exist? If so, leave.
+	// Do these horizontal arcs already exist? If so, leave.
+	var existingHorizontalArcs = findHorizontalArcsAroundPoint(gridPos);
+	if (existingHorizontalArcs !== null && existingHorizontalArcs.length > 0)
+		return;
 
-	//TODO!+. Are there already vertical arcs in this story? If so, remove them.
+	// Are there already vertical arcs in this story? If so, remove them.
+	var existingVerticalArcs = findVerticalArcsAroundPoint(gridPos);
+	console.log(existingVerticalArcs);
+	existingVerticalArcs.forEach( id => {
+		var elt = svg.getElementById(id);
+		svg.removeChild(elt);
+		connections.delete(id);
+	});
 
 	// Remove any diagonal lines.
 	var lineIDs = [];
@@ -272,13 +285,12 @@ function horizontalRejoin(svg, gridPos) {
 	var lineIDs4 = searchConnections(gridPos.row + 1, gridPos.col - 1, gridPos.row, gridPos.col);
 	lineIDs4.forEach(x => lineIDs.push(x));
 
-	lineIDs.forEach( id => 
-		{
-			var elt = svg.getElementById(id);
-			svg.removeChild(elt);
-			connections.delete(id);
-		}
-	); 
+	lineIDs.forEach( id => {
+		var elt = svg.getElementById(id);
+		svg.removeChild(elt);
+		connections.delete(id);
+	}); 
+
 	addDownwardsHorizontalArc(svg, startOfTopArc);
 	addUpwardsHorizontalArc(svg, startOfBottomArc);
 }
