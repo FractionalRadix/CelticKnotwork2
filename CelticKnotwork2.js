@@ -6,6 +6,18 @@ var yScale;
 
 var svgHelper = new SvgHelper();
 
+class Connection {
+	constructor(id,row1,col1,row2,col2) {
+		this.id = id;
+		this.row1 = row1;
+		this.col1 = col1;
+		this.row2 = row2;
+		this.col2 = col2;
+	}
+}
+var connections = new Set();
+
+
 function main() {
 	var svg = document.getElementById('svg1');
 
@@ -40,19 +52,16 @@ function main() {
 		console.log(mousePos.x+","+mousePos.y);
 		var gridPos = pointToRowAndCol(mousePos);
 		console.log(gridPos.row + " " + gridPos.col);
-		//verticalRejoin(svg, gridPos);
-		horizontalRejoin(svg, gridPos);
+		verticalRejoin(svg, gridPos);
+		//horizontalRejoin(svg, gridPos);
 	});
-
-	//TODO!+ Find a way to store the lines and arcs into a data structure.
-	// This allows us to add the break/rejoin function.
-	// When the user clicks on a part where two lines cross, we find those lines back in the SVG.
-	// We then remove those lines (break), and replace them with a set of arcs (rejoin).
 
 	drawDots(svg, numRows, numCols);
 	drawSlashLines(svg, numRows, numCols);
 	drawBackslashLines(svg, numRows, numCols);
 	drawArcs(svg, numRows, numCols);
+
+	console.log(connections);
 }
 
 function rowAndColToPoint(row,col) {
@@ -70,6 +79,7 @@ function pointToRowAndCol(point) {
 function verticalRejoin(svg, gridPos) {
 	let topOfLeftArc = { row : gridPos.row - 1, col : gridPos.col - 1 };
 	let topOfRightArc = { row: gridPos.row - 1, col : gridPos.col + 1 };
+	//TODO!~ Find any links connecting the existing points, and remove them.
 	addForwardsVerticalArc(svg, topOfLeftArc);
 	addBackwardsVerticalArc(svg, topOfRightArc);
 }
@@ -77,6 +87,7 @@ function verticalRejoin(svg, gridPos) {
 function horizontalRejoin(svg, gridPos) {
 	let startOfTopArc = { row: gridPos.row - 1, col: gridPos.col - 1 };
 	let startOfBottomArc = { row: gridPos.row + 1, col: gridPos.col - 1 };
+	//TODO!~ Find any links connecting the existing points, and remove them.
 	addDownwardsHorizontalArc(svg, startOfTopArc);
 	addUpwardsHorizontalArc(svg, startOfBottomArc);
 }
@@ -132,7 +143,9 @@ function drawSlashLines(svg, numRows, numCols) {
 			let ptStart = rowAndColToPoint(curRow, curCol);
 			let ptEnd   = rowAndColToPoint(curRow - 1, curCol + 1);
 
-			svgHelper.drawLine(svg, ptStart.x, ptStart.y, ptEnd.x, ptEnd.y, 2, "yellow");
+			let id = svgHelper.drawLine(svg, ptStart.x, ptStart.y, ptEnd.x, ptEnd.y, 2, "yellow");
+
+			connections.add(new Connection(id, curRow, curCol, curRow - 1, curCol + 1));
 		}
 	}
 }
@@ -166,7 +179,9 @@ function drawBackslashLines(svg, numRows, numCols) {
 			let startingPoint = rowAndColToPoint(curRow, curCol);
 			let endingPoint = rowAndColToPoint(curRow + 1, curCol + 1);
 		
-			svgHelper.drawLine(svg, startingPoint.x, startingPoint.y, endingPoint.x, endingPoint.y, 2, "yellow");
+			let id = svgHelper.drawLine(svg, startingPoint.x, startingPoint.y, endingPoint.x, endingPoint.y, 2, "yellow");
+
+			connections.add(new Connection(id, curRow, curCol, curRow + 1, curCol + 1));
 		}
 	}
 }
@@ -199,7 +214,8 @@ function addUpwardsHorizontalArc(svg, start) {
 	let pt1 = rowAndColToPoint(start.row, start.col);
 	let pt2 = rowAndColToPoint(start.row, start.col + 2);
 	let ctrl = rowAndColToPoint(start.row - 1, start.col + 1);
-	svgHelper.addQuadraticBezierCurve(svg, pt1, ctrl, pt2);
+	let id = svgHelper.addQuadraticBezierCurve(svg, pt1, ctrl, pt2);
+	connections.add(new Connection(id, start.row, start.col, start.row, start.col + 2));
 }
 
 /**
@@ -212,7 +228,8 @@ function addDownwardsHorizontalArc(svg, start) {
 	let pt1 = rowAndColToPoint(start.row, start.col);
 	let pt2 = rowAndColToPoint(start.row, start.col + 2);
 	let ctrl = rowAndColToPoint(start.row + 1, start.col + 1);
-	svgHelper.addQuadraticBezierCurve(svg, pt1, ctrl, pt2);
+	let id = svgHelper.addQuadraticBezierCurve(svg, pt1, ctrl, pt2);
+	connections.add(new Connection(id, start.row, start.col, start.row, start.col + 2));
 }
 
 /**
@@ -225,7 +242,8 @@ function addBackwardsVerticalArc(svg, start) {
 	let pt1 = rowAndColToPoint(start.row, start.col);
 	let pt2 = rowAndColToPoint(start.row + 2, start.col);
 	let ctrl = rowAndColToPoint(start.row + 1, start.col - 1);
-	svgHelper.addQuadraticBezierCurve(svg, pt1, ctrl, pt2);
+	let id = svgHelper.addQuadraticBezierCurve(svg, pt1, ctrl, pt2);
+	connections.add(new Connection(id, start.row, start.col, start.row + 2, start.col));
 }
 
 /**
@@ -238,6 +256,7 @@ function addForwardsVerticalArc(svg, start) {
 	let pt1 = rowAndColToPoint(start.row, start.col);
 	let pt2 = rowAndColToPoint(start.row + 2, start.col);
 	let ctrl = rowAndColToPoint(start.row + 1, start.col + 1);
-	svgHelper.addQuadraticBezierCurve(svg, pt1, ctrl, pt2);
+	let id = svgHelper.addQuadraticBezierCurve(svg, pt1, ctrl, pt2);
+	connections.add(new Connection(id,start.row, start.col, start.row + 2, start.col));
 }
 
