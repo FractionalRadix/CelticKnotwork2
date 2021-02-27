@@ -51,7 +51,7 @@ function activate_operator(src) {
 			//TODO!+ selectedOperation = cross;
 			break;
 		case "Erase":
-			//TODO!+ selectedOperation = erase;
+			selectedOperation = erase;
 			break;
 		default:
 			break;
@@ -117,6 +117,109 @@ function pointToRowAndCol(point) {
 	var colCoor = ( point.x - xOffset ) / xScale;
 	var rowCoor = ( point.y - yOffset ) / yScale;
 	return { row : Math.round(rowCoor), col: Math.round(colCoor) };
+}
+
+function erase(svg, gridPos) {
+
+	res = [];
+
+	// Find all line segments connected to the selected grid point, and add their ID's to the array 'res'.
+	for (let lineSeg of connections) {
+		let test1 = (lineSeg[1].row1 == gridPos.row && lineSeg[1].col1 == gridPos.col);
+		let test2 = (lineSeg[1].row2 == gridPos.row && lineSeg[1].col2 == gridPos.col);
+		if (test1 || test2) {
+			let rowDiff = Math.abs(lineSeg[1].row1 - lineSeg[1].row2);
+			let colDiff = Math.abs(lineSeg[1].col1 - lineSeg[1].col2);
+			if (rowDiff <= 1 && colDiff <= 1) {
+				res.push(lineSeg[0]);
+			}
+		}
+	}
+
+	// Find horizontal arcs surrounding this grid point.
+	// Note that we should still check in which direction they bend!
+	var verticalArcs = findVerticalArcsAroundPoint(svg, gridPos);
+	verticalArcs.forEach(x => res.push(x));
+
+	var horizontalArcs = findHorizontalArcsAroundPoint(svg, gridPos);
+	horizontalArcs.forEach(x => res.push(x));
+
+	// Remove all the elements we found.
+	res.forEach( id => 
+		{
+			var elt = svg.getElementById(id);
+			svg.removeChild(elt);
+			connections.delete(id);
+		}
+	); 
+}
+
+/**
+ * Finds the vertical arcs (if any) that surround the given grid position.
+ * @param {Object} svg The SVG element for the grid point.
+ * @param {Object} gridPoint The grid point; should have a "row" member and a "col" member, both of which should be integers.
+ * @return {Array} An array of IDs, where each ID is the ID of a vertical arc surrounding the given grid point. (So, size of the array varies from 0 to 2, inclusive).
+ */
+function findVerticalArcsAroundPoint(svg, gridPoint) {
+	// Find vertical arcs surrounding this grid point.
+	// Note that we should still check in which direction they bend!
+	var res = [];
+
+	for (let arc of connections) {
+		//console.log(arc[1]);
+		//console.log(gridPoint);
+		let test1 = (arc[1].row1 == gridPoint.row - 1 && arc[1].col1 == gridPoint.col - 1) && (arc[1].row2 == gridPoint.row + 1 && arc[1].col2 == gridPoint.col - 1);
+		let test2 = (arc[1].row1 == gridPoint.row + 1 && arc[1].col1 == gridPoint.col - 1) && (arc[1].row2 == gridPoint.row - 1 && arc[1].col2 == gridPoint.col - 1);
+		if (test1 || test2) {
+			// The SVG element we found is a vertical arc, directly to the left of our grid point.
+			//TODO!+ Find out if it bends towards the right (towards our grid point), if it doesn't we don't have to remove it...
+			res.push(arc[0]);
+		}
+		
+		let test3 = (arc[1].row1 == gridPoint.row - 1 && arc[1].col1 == gridPoint.col + 1) && (arc[1].row2 == gridPoint.row + 1 && arc[1].col2 == gridPoint.col + 1);
+		let test4 = (arc[1].row1 == gridPoint.row + 1 && arc[1].col1 == gridPoint.col + 1) && (arc[1].row2 == gridPoint.row - 1 && arc[1].col2 == gridPoint.col + 1);
+		if (test3 || test4) {
+			// The SVG element we found is a vertical arc, directly to the right of our grid point.
+			//TODO!+ Find out if it bends towards the left (towards our grid point), if it does we don't have to remove it...
+			res.push(arc[0]);
+		}
+	}
+
+	return res;
+}
+
+/**
+ * Finds the horizontal arcs (if any) that surround the given grid position.
+ * @param {Object} svg The SVG element for the grid point.
+ * @param {Object} gridPoint The grid point; should have a "row" member and a "col" member, both of which should be integers.
+ * @return {Array} An array of IDs, where each ID is the ID of a horizontal arc surrounding the given grid point. (So, size of the array varies from 0 to 2, inclusive).
+ */
+function findHorizontalArcsAroundPoint(svg, gridPoint) {
+	// Find vertical arcs surrounding this grid point.
+	// Note that we should still check in which direction they bend!
+	var res = [];
+
+	console.log(gridPoint);
+
+	for (let arc of connections) {
+		let test1 = (arc[1].row1 == gridPoint.row - 1 && arc[1].col1 == gridPoint.col - 1) && (arc[1].row2 == gridPoint.row - 1 && arc[1].col2 == gridPoint.col + 1);
+		let test2 = (arc[1].row1 == gridPoint.row - 1 && arc[1].col1 == gridPoint.col + 1) && (arc[1].row2 == gridPoint.row - 1 && arc[1].col2 == gridPoint.col - 1);
+		if (test1 || test2) {
+			// The SVG element we found is a horizontal arc, directly above our grid point.
+			//TODO!+ Find out if it bends downwards (towards our grid point), if it doesn't we don't have to remove it...
+			res.push(arc[0]);
+		}
+
+		let test3 = (arc[1].row1 == gridPoint.row + 1 && arc[1].col1 == gridPoint.col - 1) && (arc[1].row2 == gridPoint.row + 1 && arc[1].col2 == gridPoint.col + 1);
+		let test4 = (arc[1].row1 == gridPoint.row + 1 && arc[1].col1 == gridPoint.col + 1) && (arc[1].row2 == gridPoint.row + 1 && arc[1].col2 == gridPoint.col - 1);
+		if (test3 || test4) {
+			// The SVG element we found is a horizontal arc, directly below our grid point.
+			//TODO!+ Find out if it bends upwards (towards our grid point), if it doesn't we don't have to remvoe it...
+			res.push(arc[0]);
+		}
+	}
+
+	return res;
 }
 
 function verticalRejoin(svg, gridPos) {
@@ -194,12 +297,10 @@ function drawDots(svg, numRows, numCols) {
 	for (let row = 1; row <= numRows; row++) {
 		for (let col = 1; col <= numCols; col++) {
 			const point = rowAndColToPoint(row, col);
-console.log(point);
 			svgHelper.drawDot(svg, point.x, point.y, 2, "white");
-		} // end for col
-	} // end for row
+		}
+	}
 }
-
 
 function drawSlashLines(svg, numRows, numCols) {
 	let start = 4;
@@ -248,11 +349,11 @@ function drawBackslashLines(svg, numRows, numCols) {
 		// Determine the starting point and ending point for the entire diagonal.
 		let startingPointRowIdx = Math.max(numRows - idx, 1);
 
-		let startingPointColIdx = Math.max(1, idx - numRows + 2); //TODO?~ Is this correct?
+		let startingPointColIdx = Math.max(1, idx - numRows + 2);
 
 		let endingPointRowIdx = numRows;
 		if (idx > numCols) {
-			endingPointRowIdx = numRows + numCols - idx; //TODO?~ Is this correct?
+			endingPointRowIdx = numRows + numCols - idx;
 		}
 
 		// Draw the diagonal as a series of smaller diagonals.
