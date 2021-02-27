@@ -15,8 +15,29 @@ class Connection {
 		this.col2 = col2;
 	}
 }
+//TODO!~ Use a Map instead of a Set, so we can easier remove elements.
 var connections = new Set();
 
+function searchConnections(row1, col1, row2, col2) {
+	var res = [];
+	connections.forEach( connection =>
+		{
+			var bool1 = connection.row1 === row1 && connection.col1 == connection.col1;
+			var bool2 = connection.row2 === row2 && connection.col2 == connection.col2;
+			if (bool1 && bool2) {
+				console.log("Gotcha! 1");
+				res.push(connection.id);
+			}
+			var bool3 = connection.row1 === row2 && connection.col1 == connection.col2;
+			var bool4 = connection.row2 === row1 && connection.col2 == connection.col1;
+			if (bool3 && bool4) {
+				console.log("Gotcha! 2");
+				res.push(connection.id);
+			}
+		}
+	);
+	return res;
+}
 
 function main() {
 	var svg = document.getElementById('svg1');
@@ -79,7 +100,26 @@ function pointToRowAndCol(point) {
 function verticalRejoin(svg, gridPos) {
 	let topOfLeftArc = { row : gridPos.row - 1, col : gridPos.col - 1 };
 	let topOfRightArc = { row: gridPos.row - 1, col : gridPos.col + 1 };
+
 	//TODO!~ Find any links connecting the existing points, and remove them.
+	// 0. Do these vertical arcs already exist? If so, leave.
+	// 1. Is there a link from (gridPos.row - 1, gridPos.col -1 to gridPos.row + 1, gridPos.col + 1 ?
+	//		If so, remove it.
+	// 2, Is there a link from (gridPos.row - 1, gridPos.col + 1 to gridPos.row + 1, gridPos.col 1 ?
+	//		If so, remove it.
+	// 3. Are there already horizontal arcs in this story? If so, remove them.
+
+	var lineIDs = searchConnections(gridPos.row - 1, gridPos.col - 1, gridPos.row + 1, gridPos.col + 1);
+	console.log(lineIDs);
+	lineIDs.forEach( id => 
+		{
+			var elt = svg.getElementById(id);
+			console.log(elt);
+			svg.removeChild(elt);
+		//TODO!+ Also remove it from the Set!
+		}
+	); 
+
 	addForwardsVerticalArc(svg, topOfLeftArc);
 	addBackwardsVerticalArc(svg, topOfRightArc);
 }
