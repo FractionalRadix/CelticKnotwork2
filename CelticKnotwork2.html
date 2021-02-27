@@ -3,10 +3,28 @@
 <head>
 	<meta charset="utf-8">
 	<title>Celtic Knotwork Generator</title>
-	<script language="JavaScript" type="text/javascript" src="SVGFunctions.js">
+	<script type="text/javascript" src="SVGFunctions.js">
 	</script>
-	<script language="JavaScript" type="text/javascript" src="CelticKnotwork2.js">
+	<script type="text/javascript" src="CelticKnotwork2.js">
 	</script>
+	<style type="text/css">
+.box {
+	#width: 200px;
+	#height: 20px;
+
+	margin: 5px;
+	padding: 5px;
+
+	border: 6px;
+	border-style: ridge;
+	border-color: yellow;
+	border-radius: 5px;
+
+	color: darkgreen;
+	background-color: lightgreen;
+	font-weight: bold;
+}
+	</style>
 </head>
 <body style="background-color: darkgreen; color: white;" onload="main()">
     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: large; font-weight: bold;">
@@ -15,9 +33,16 @@
 		This was inspired by the elaborate knotwork found in ancient Celtic art.<br/>
 		Can you create intricate designs like the ancient Celts? Give it a try!</br/>
 		<p/>
-		<svg id="svg1" width="400" height="400" style="display: flex">
-			<rect x="0" y="0" width="400" height="400" stroke="lightgreen" fill="none"/>
+		<svg id="svg1" width="400" height="400" style="display: flex" class="box">
+			<!-- An inner rect is necessary to give JavaScript access to the width and height, using getBBox(). -->
+			<rect x="0" y="0" width="400" height="400" fill="none"/>
 		</svg>
+		<div style="display:flex; flex-direction: row; align-items: center; justify-content: center">
+			<button class="box" onclick="activate_operator(this)" id="VerticalRejoin">Vertical rejoin</button>
+			<button class="box" onclick="activate_operator(this)" id="HorizontalRejoin">Horizontal rejoin</button>
+			<button class="box" onclick="activate_operator(this)" id="Cross">Cross</button>
+			<button class="box" onclick="activate_operator(this)" id="Erase">Erase</button>
+		</div>
     </div>
 </body>
 </html>

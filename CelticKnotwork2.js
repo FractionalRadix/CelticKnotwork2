@@ -6,40 +6,62 @@ var yScale;
 
 var svgHelper = new SvgHelper();
 
+// ********************* Keeping track of the connections *******************************************************************
 class Connection {
-	constructor(id,row1,col1,row2,col2) {
-		this.id = id;
+	constructor(row1,col1,row2,col2) {
 		this.row1 = row1;
 		this.col1 = col1;
 		this.row2 = row2;
 		this.col2 = col2;
 	}
 }
-//TODO!~ Use a Map instead of a Set, so we can easier remove elements.
-var connections = new Set();
+
+var connections = new Map();
 
 function searchConnections(row1, col1, row2, col2) {
 	var res = [];
-	connections.forEach( connection =>
-		{
-			var bool1 = connection.row1 === row1 && connection.col1 == connection.col1;
-			var bool2 = connection.row2 === row2 && connection.col2 == connection.col2;
-			if (bool1 && bool2) {
-				console.log("Gotcha! 1");
-				res.push(connection.id);
-			}
-			var bool3 = connection.row1 === row2 && connection.col1 == connection.col2;
-			var bool4 = connection.row2 === row1 && connection.col2 == connection.col1;
-			if (bool3 && bool4) {
-				console.log("Gotcha! 2");
-				res.push(connection.id);
-			}
+	for (let item of connections) {
+		var bool1 = item[1].row1 === row1 && item[1].col1 == col1;
+		var bool2 = item[1].row2 === row2 && item[1].col2 == col2;
+		if (bool1 && bool2) {
+			res.push(item[0]);
 		}
-	);
+		var bool3 = item[1].row1 === row2 && item[1].col1 == col2;
+		var bool4 = item[1].row2 === row1 && item[1].col2 == col1;
+		if (bool3 && bool4) {
+			res.push(item[0]);
+		}
+	}
 	return res;
 }
 
+// ********************* Deciding wich operator to use **********************************************************************
+
+var selectedOperation = null;
+
+function activate_operator(src) {
+	switch(src.id) {
+		case "VerticalRejoin":
+			selectedOperation = verticalRejoin;
+			break;
+		case "HorizontalRejoin":
+			selectedOperation = horizontalRejoin;
+			break;
+		case "Cross":
+			//TODO!+ selectedOperation = cross;
+			break;
+		case "Erase":
+			//TODO!+ selectedOperation = erase;
+			break;
+		default:
+			break;
+	}
+}
+
 function main() {
+
+	var button1 = document.getElementById('VerticalRejoin');
+
 	var svg = document.getElementById('svg1');
 
 	// Test case values for (numRows,numCols):
@@ -70,19 +92,19 @@ function main() {
     }
 	document.addEventListener("click", function(event) {
 		var mousePos = getMousePosition(event);
-		console.log(mousePos.x+","+mousePos.y);
 		var gridPos = pointToRowAndCol(mousePos);
-		console.log(gridPos.row + " " + gridPos.col);
-		verticalRejoin(svg, gridPos);
+		
+		//verticalRejoin(svg, gridPos);
 		//horizontalRejoin(svg, gridPos);
+		if (selectedOperation !== null) {
+			selectedOperation(svg, gridPos);
+		}
 	});
 
 	drawDots(svg, numRows, numCols);
 	drawSlashLines(svg, numRows, numCols);
 	drawBackslashLines(svg, numRows, numCols);
 	drawArcs(svg, numRows, numCols);
-
-	console.log(connections);
 }
 
 function rowAndColToPoint(row,col) {
@@ -101,22 +123,26 @@ function verticalRejoin(svg, gridPos) {
 	let topOfLeftArc = { row : gridPos.row - 1, col : gridPos.col - 1 };
 	let topOfRightArc = { row: gridPos.row - 1, col : gridPos.col + 1 };
 
-	//TODO!~ Find any links connecting the existing points, and remove them.
-	// 0. Do these vertical arcs already exist? If so, leave.
-	// 1. Is there a link from (gridPos.row - 1, gridPos.col -1 to gridPos.row + 1, gridPos.col + 1 ?
-	//		If so, remove it.
-	// 2, Is there a link from (gridPos.row - 1, gridPos.col + 1 to gridPos.row + 1, gridPos.col 1 ?
-	//		If so, remove it.
-	// 3. Are there already horizontal arcs in this story? If so, remove them.
+	//TODO!+ Do these vertical arcs already exist? If so, leave.
 
-	var lineIDs = searchConnections(gridPos.row - 1, gridPos.col - 1, gridPos.row + 1, gridPos.col + 1);
-	console.log(lineIDs);
+	//TODO!+. Are there already horizontal arcs in this story? If so, remove them.
+
+	// Remove any diagonal lines.
+	var lineIDs = [];
+	var lineIDs1 = searchConnections(gridPos.row - 1, gridPos.col - 1, gridPos.row, gridPos.col);
+	lineIDs1.forEach(x => lineIDs.push(x));
+	var lineIDs2 = searchConnections(gridPos.row + 1, gridPos.col + 1, gridPos.row, gridPos.col);
+	lineIDs2.forEach(x => lineIDs.push(x));
+	var lineIDs3 = searchConnections(gridPos.row - 1, gridPos.col + 1, gridPos.row, gridPos.col);
+	lineIDs3.forEach(x => lineIDs.push(x));
+	var lineIDs4 = searchConnections(gridPos.row + 1, gridPos.col - 1, gridPos.row, gridPos.col);
+	lineIDs4.forEach(x => lineIDs.push(x));
+
 	lineIDs.forEach( id => 
 		{
 			var elt = svg.getElementById(id);
-			console.log(elt);
 			svg.removeChild(elt);
-		//TODO!+ Also remove it from the Set!
+			connections.delete(id);
 		}
 	); 
 
@@ -127,7 +153,29 @@ function verticalRejoin(svg, gridPos) {
 function horizontalRejoin(svg, gridPos) {
 	let startOfTopArc = { row: gridPos.row - 1, col: gridPos.col - 1 };
 	let startOfBottomArc = { row: gridPos.row + 1, col: gridPos.col - 1 };
-	//TODO!~ Find any links connecting the existing points, and remove them.
+
+	//TODO!+ Do these horizontal arcs already exist? If so, leave.
+
+	//TODO!+. Are there already vertical arcs in this story? If so, remove them.
+
+	// Remove any diagonal lines.
+	var lineIDs = [];
+	var lineIDs1 = searchConnections(gridPos.row - 1, gridPos.col - 1, gridPos.row, gridPos.col);
+	lineIDs1.forEach(x => lineIDs.push(x));
+	var lineIDs2 = searchConnections(gridPos.row + 1, gridPos.col + 1, gridPos.row, gridPos.col);
+	lineIDs2.forEach(x => lineIDs.push(x));
+	var lineIDs3 = searchConnections(gridPos.row - 1, gridPos.col + 1, gridPos.row, gridPos.col);
+	lineIDs3.forEach(x => lineIDs.push(x));
+	var lineIDs4 = searchConnections(gridPos.row + 1, gridPos.col - 1, gridPos.row, gridPos.col);
+	lineIDs4.forEach(x => lineIDs.push(x));
+
+	lineIDs.forEach( id => 
+		{
+			var elt = svg.getElementById(id);
+			svg.removeChild(elt);
+			connections.delete(id);
+		}
+	); 
 	addDownwardsHorizontalArc(svg, startOfTopArc);
 	addUpwardsHorizontalArc(svg, startOfBottomArc);
 }
@@ -146,6 +194,7 @@ function drawDots(svg, numRows, numCols) {
 	for (let row = 1; row <= numRows; row++) {
 		for (let col = 1; col <= numCols; col++) {
 			const point = rowAndColToPoint(row, col);
+console.log(point);
 			svgHelper.drawDot(svg, point.x, point.y, 2, "white");
 		} // end for col
 	} // end for row
@@ -183,9 +232,9 @@ function drawSlashLines(svg, numRows, numCols) {
 			let ptStart = rowAndColToPoint(curRow, curCol);
 			let ptEnd   = rowAndColToPoint(curRow - 1, curCol + 1);
 
-			let id = svgHelper.drawLine(svg, ptStart.x, ptStart.y, ptEnd.x, ptEnd.y, 2, "yellow");
+			let id = svgHelper.drawLine(svg, ptStart.x, ptStart.y, ptEnd.x, ptEnd.y, 2, "darkgreen");
 
-			connections.add(new Connection(id, curRow, curCol, curRow - 1, curCol + 1));
+			connections.set(id, new Connection(curRow, curCol, curRow - 1, curCol + 1));
 		}
 	}
 }
@@ -219,9 +268,9 @@ function drawBackslashLines(svg, numRows, numCols) {
 			let startingPoint = rowAndColToPoint(curRow, curCol);
 			let endingPoint = rowAndColToPoint(curRow + 1, curCol + 1);
 		
-			let id = svgHelper.drawLine(svg, startingPoint.x, startingPoint.y, endingPoint.x, endingPoint.y, 2, "yellow");
+			let id = svgHelper.drawLine(svg, startingPoint.x, startingPoint.y, endingPoint.x, endingPoint.y, 2, "darkgreen");
 
-			connections.add(new Connection(id, curRow, curCol, curRow + 1, curCol + 1));
+			connections.set(id, new Connection(curRow, curCol, curRow + 1, curCol + 1));
 		}
 	}
 }
@@ -254,8 +303,8 @@ function addUpwardsHorizontalArc(svg, start) {
 	let pt1 = rowAndColToPoint(start.row, start.col);
 	let pt2 = rowAndColToPoint(start.row, start.col + 2);
 	let ctrl = rowAndColToPoint(start.row - 1, start.col + 1);
-	let id = svgHelper.addQuadraticBezierCurve(svg, pt1, ctrl, pt2);
-	connections.add(new Connection(id, start.row, start.col, start.row, start.col + 2));
+	let id = svgHelper.addQuadraticBezierCurve(svg, pt1, ctrl, pt2, "darkgreen");
+	connections.set(id, new Connection(start.row, start.col, start.row, start.col + 2));
 }
 
 /**
@@ -268,8 +317,8 @@ function addDownwardsHorizontalArc(svg, start) {
 	let pt1 = rowAndColToPoint(start.row, start.col);
 	let pt2 = rowAndColToPoint(start.row, start.col + 2);
 	let ctrl = rowAndColToPoint(start.row + 1, start.col + 1);
-	let id = svgHelper.addQuadraticBezierCurve(svg, pt1, ctrl, pt2);
-	connections.add(new Connection(id, start.row, start.col, start.row, start.col + 2));
+	let id = svgHelper.addQuadraticBezierCurve(svg, pt1, ctrl, pt2, "darkgreen");
+	connections.set(id, new Connection(start.row, start.col, start.row, start.col + 2));
 }
 
 /**
@@ -282,8 +331,8 @@ function addBackwardsVerticalArc(svg, start) {
 	let pt1 = rowAndColToPoint(start.row, start.col);
 	let pt2 = rowAndColToPoint(start.row + 2, start.col);
 	let ctrl = rowAndColToPoint(start.row + 1, start.col - 1);
-	let id = svgHelper.addQuadraticBezierCurve(svg, pt1, ctrl, pt2);
-	connections.add(new Connection(id, start.row, start.col, start.row + 2, start.col));
+	let id = svgHelper.addQuadraticBezierCurve(svg, pt1, ctrl, pt2, "darkgreen");
+	connections.set(id, new Connection(start.row, start.col, start.row + 2, start.col));
 }
 
 /**
@@ -296,7 +345,7 @@ function addForwardsVerticalArc(svg, start) {
 	let pt1 = rowAndColToPoint(start.row, start.col);
 	let pt2 = rowAndColToPoint(start.row + 2, start.col);
 	let ctrl = rowAndColToPoint(start.row + 1, start.col + 1);
-	let id = svgHelper.addQuadraticBezierCurve(svg, pt1, ctrl, pt2);
-	connections.add(new Connection(id,start.row, start.col, start.row + 2, start.col));
+	let id = svgHelper.addQuadraticBezierCurve(svg, pt1, ctrl, pt2, "darkgreen");
+	connections.set(id, new Connection(start.row, start.col, start.row + 2, start.col));
 }
 
