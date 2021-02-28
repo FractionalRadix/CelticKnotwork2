@@ -107,158 +107,13 @@ function erase(svg, gridPos) {
 
 	// Find vertical arcs surrounding this grid point.
 	// Note that we should still check in which direction they bend!
-	var verticalArcs = findVerticalArcsAroundPoint(gridPos);
+	var verticalArcs = findVerticalArcsFacingPoint(gridPos);
 	massDelete(svg, verticalArcs);
 
 	// Find horizontal arcs surrounding this grid point.
 	// Note that we should still check in which direction they bend!
-	var horizontalArcs = findHorizontalArcsAroundPoint(gridPos);
+	var horizontalArcs = findHorizontalArcsFacingPoint(gridPos);
 	massDelete(svg, horizontalArcs);
-}
-
-/**
- * Finds the vertical arcs (if any) that surround the given grid position.
- * @param {Object} gridPoint The grid point; should have a "row" member and a "col" member, both of which should be integers.
- * @return {Array} An array of IDs, where each ID is the ID of a vertical arc surrounding the given grid point. (So, size of the array varies from 0 to 2, inclusive).
- */
-function findVerticalArcsAroundPoint(gridPoint) {
-	// Find vertical arcs surrounding this grid point.
-	// Note that we should still check in which direction they bend!
-	var res = [];
-
-	for (let [id,arc] of connections) {
-		let test1 = (arc.row1 == gridPoint.row - 1 && arc.col1 == gridPoint.col - 1) && (arc.row2 == gridPoint.row + 1 && arc.col2 == gridPoint.col - 1);
-		let test2 = (arc.row1 == gridPoint.row + 1 && arc.col1 == gridPoint.col - 1) && (arc.row2 == gridPoint.row - 1 && arc.col2 == gridPoint.col - 1);
-		if (test1 || test2) {
-			// The SVG element we found is a vertical arc, directly to the left of our grid point.
-			//TODO!+ Find out if it bends towards the right (towards our grid point), if it doesn't we don't have to remove it...
-			res.push(id);
-		}
-		
-		let test3 = (arc.row1 == gridPoint.row - 1 && arc.col1 == gridPoint.col + 1) && (arc.row2 == gridPoint.row + 1 && arc.col2 == gridPoint.col + 1);
-		let test4 = (arc.row1 == gridPoint.row + 1 && arc.col1 == gridPoint.col + 1) && (arc.row2 == gridPoint.row - 1 && arc.col2 == gridPoint.col + 1);
-		if (test3 || test4) {
-			// The SVG element we found is a vertical arc, directly to the right of our grid point.
-			//TODO!+ Find out if it bends towards the left (towards our grid point), if it does we don't have to remove it...
-			res.push(id);
-		}
-	}
-
-	return res;
-}
-
-/**
- * Finds the horizontal arcs (if any) that surround the given grid position.
- * @param {Object} gridPoint The grid point; should have a "row" member and a "col" member, both of which should be integers.
- * @return {Array} An array of IDs, where each ID is the ID of a horizontal arc surrounding the given grid point. (So, size of the array varies from 0 to 2, inclusive).
- */
-function findHorizontalArcsAroundPoint(gridPoint) {
-	// Find horizontal arcs surrounding this grid point.
-	// Note that we should still check in which direction they bend!
-	var res = [];
-
-	for (let [id, arc] of connections) {
-		let test1 = (arc.row1 == gridPoint.row - 1 && arc.col1 == gridPoint.col - 1) && (arc.row2 == gridPoint.row - 1 && arc.col2 == gridPoint.col + 1);
-		let test2 = (arc.row1 == gridPoint.row - 1 && arc.col1 == gridPoint.col + 1) && (arc.row2 == gridPoint.row - 1 && arc.col2 == gridPoint.col - 1);
-		if (test1 || test2) {
-			// The SVG element we found is a horizontal arc, directly above our grid point.
-			//TODO!+ Find out if it bends downwards (towards our grid point), if it doesn't we don't have to remove it...
-			res.push(id);
-		}
-
-		let test3 = (arc.row1 == gridPoint.row + 1 && arc.col1 == gridPoint.col - 1) && (arc.row2 == gridPoint.row + 1 && arc.col2 == gridPoint.col + 1);
-		let test4 = (arc.row1 == gridPoint.row + 1 && arc.col1 == gridPoint.col + 1) && (arc.row2 == gridPoint.row + 1 && arc.col2 == gridPoint.col - 1);
-		if (test3 || test4) {
-			// The SVG element we found is a horizontal arc, directly below our grid point.
-			//TODO!+ Find out if it bends upwards (towards our grid point), if it doesn't we don't have to remvoe it...
-			res.push(id);
-		}
-	}
-
-	return res;
-}
-
-function verticalRejoin(svg, gridPos) {
-	console.log("In verticalRejoin(svg, gridPos)");
-
-	let topOfLeftArc = { row : gridPos.row - 1, col : gridPos.col - 1 };
-	let topOfRightArc = { row: gridPos.row - 1, col : gridPos.col + 1 };
-
-	// Do these vertical arcs already exist? If so, leave.
-	var existingVerticalArcs = findVerticalArcsAroundPoint(gridPos);
-	if (existingVerticalArcs !== null && existingVerticalArcs.length > 0)
-		return;
-
-	// Are there already horizontal arcs in this story? If so, remove them.
-	var existingHorizontalArcs = findHorizontalArcsAroundPoint(gridPos);
-	massDelete(svg, existingHorizontalArcs);
-
-	// Remove any diagonal lines.
-	//TODO?~ Use nested loops.
-	var lineIDs1 = searchConnections(gridPos.row - 1, gridPos.col - 1, gridPos.row, gridPos.col);
-	massDelete(svg, lineIDs1);
-	var lineIDs2 = searchConnections(gridPos.row + 1, gridPos.col + 1, gridPos.row, gridPos.col);
-	massDelete(svg, lineIDs2);
-	var lineIDs3 = searchConnections(gridPos.row - 1, gridPos.col + 1, gridPos.row, gridPos.col);
-	massDelete(svg, lineIDs3);
-	var lineIDs4 = searchConnections(gridPos.row + 1, gridPos.col - 1, gridPos.row, gridPos.col);
-	massDelete(svg, lineIDs4);
-
-	addForwardsVerticalArc(svg, topOfLeftArc);
-	addBackwardsVerticalArc(svg, topOfRightArc);
-}
-
-function horizontalRejoin(svg, gridPos) {
-	let startOfTopArc = { row: gridPos.row - 1, col: gridPos.col - 1 };
-	let startOfBottomArc = { row: gridPos.row + 1, col: gridPos.col - 1 };
-
-	// Do these horizontal arcs already exist? If so, leave.
-	var existingHorizontalArcs = findHorizontalArcsAroundPoint(gridPos);
-	if (existingHorizontalArcs !== null && existingHorizontalArcs.length > 0)
-		return;
-
-	// Are there already vertical arcs in this story? If so, remove them.
-	var existingVerticalArcs = findVerticalArcsAroundPoint(gridPos);
-	massDelete(svg, existingVerticalArcs);
-
-	// Remove any diagonal lines.
-	//TODO?~ Use a nested loops.
-	var lineIDs1 = searchConnections(gridPos.row - 1, gridPos.col - 1, gridPos.row, gridPos.col);
-	massDelete(svg, lineIDs1);
-	var lineIDs2 = searchConnections(gridPos.row + 1, gridPos.col + 1, gridPos.row, gridPos.col);
-	massDelete(svg, lineIDs2);
-	var lineIDs3 = searchConnections(gridPos.row - 1, gridPos.col + 1, gridPos.row, gridPos.col);
-	massDelete(svg, lineIDs3);
-	var lineIDs4 = searchConnections(gridPos.row + 1, gridPos.col - 1, gridPos.row, gridPos.col);
-	massDelete(svg, lineIDs4);
-
-	addDownwardsHorizontalArc(svg, startOfTopArc);
-	addUpwardsHorizontalArc(svg, startOfBottomArc);
-}
-
-function cross(svg, gridPoint) {
-
-	console.log("In function 'cross'");
-
-	var toBeDeleted = allLinesConnectedTo(gridPoint);
-	massDelete(svg, toBeDeleted);
-
-	toBeDeleted = findHorizontalArcsAroundPoint(gridPoint);
-	massDelete(svg, toBeDeleted);
-	
-	toBeDeleted = findVerticalArcsAroundPoint(gridPoint);
-	massDelete(svg, toBeDeleted);
-
-	let center = rowAndColToPoint(gridPoint.row, gridPoint.col);
-	
-	for (let rowDelta = - 1; rowDelta <= +1; rowDelta += 2) {
-		for (let colDelta = -1; colDelta <= +1; colDelta += 2) {
-			let corner1onGrid = { row: gridPoint.row + rowDelta, col: gridPoint.col + colDelta };
-			let corner1onSvg  = rowAndColToPoint( corner1onGrid.row, corner1onGrid.col );
-			let id1 = svgHelper.drawLine(svg, center.x, center.y, corner1onSvg.x, corner1onSvg.y,  2, "darkgreen");
-			connections.set(id1, new Connection(gridPoint.row, gridPoint.col, corner1onGrid.row, corner1onGrid.col));
-		}
-	}
 }
 
 /**
@@ -383,7 +238,7 @@ function addUpwardsHorizontalArc(svg, start) {
 	let pt2 = rowAndColToPoint(start.row, start.col + 2);
 	let ctrl = rowAndColToPoint(start.row - 1, start.col + 1);
 	let id = svgHelper.addQuadraticBezierCurve(svg, pt1, ctrl, pt2, "darkgreen");
-	connections.set(id, new Connection(start.row, start.col, start.row, start.col + 2));
+	connections.set(id, new Connection(start.row, start.col, start.row, start.col + 2, start.row - 1, start.col + 1 ));
 }
 
 /**
@@ -397,7 +252,7 @@ function addDownwardsHorizontalArc(svg, start) {
 	let pt2 = rowAndColToPoint(start.row, start.col + 2);
 	let ctrl = rowAndColToPoint(start.row + 1, start.col + 1);
 	let id = svgHelper.addQuadraticBezierCurve(svg, pt1, ctrl, pt2, "darkgreen");
-	connections.set(id, new Connection(start.row, start.col, start.row, start.col + 2));
+	connections.set(id, new Connection(start.row, start.col, start.row, start.col + 2, start.row + 1, start.col + 1));
 }
 
 /**
@@ -411,7 +266,7 @@ function addBackwardsVerticalArc(svg, start) {
 	let pt2 = rowAndColToPoint(start.row + 2, start.col);
 	let ctrl = rowAndColToPoint(start.row + 1, start.col - 1);
 	let id = svgHelper.addQuadraticBezierCurve(svg, pt1, ctrl, pt2, "darkgreen");
-	connections.set(id, new Connection(start.row, start.col, start.row + 2, start.col));
+	connections.set(id, new Connection(start.row, start.col, start.row + 2, start.col, start.row + 1, start.col - 1));
 }
 
 /**
@@ -425,6 +280,6 @@ function addForwardsVerticalArc(svg, start) {
 	let pt2 = rowAndColToPoint(start.row + 2, start.col);
 	let ctrl = rowAndColToPoint(start.row + 1, start.col + 1);
 	let id = svgHelper.addQuadraticBezierCurve(svg, pt1, ctrl, pt2, "darkgreen");
-	connections.set(id, new Connection(start.row, start.col, start.row + 2, start.col));
+	connections.set(id, new Connection(start.row, start.col, start.row + 2, start.col, start.row + 1, start.col + 1));
 }
 
