@@ -41,6 +41,10 @@ function massDelete(svg, toBeDeleted) {
 
 function cross(svg, gridPoint) {
 
+	// Are these arcs going to connect to something? If not, leave.
+	if (!surroundingPointsConnected(gridPoint))
+		return;
+
 	var toBeDeleted = allLinesConnectedTo(gridPoint);
 	massDelete(svg, toBeDeleted);
 
@@ -66,6 +70,10 @@ function verticalRejoin(svg, gridPos) {
 
 	let topOfLeftArc = { row : gridPos.row - 1, col : gridPos.col - 1 };
 	let topOfRightArc = { row: gridPos.row - 1, col : gridPos.col + 1 };
+
+	// Are these arcs going to connect to something? If not, leave.
+	if (!surroundingPointsConnected(gridPos))
+		return;
 
 	// Do these vertical arcs already exist? If so, leave.
 	var existingVerticalArcs = findVerticalArcsFacingPoint(gridPos);
@@ -94,6 +102,10 @@ function verticalRejoin(svg, gridPos) {
 function horizontalRejoin(svg, gridPos) {
 	let startOfTopArc = { row: gridPos.row - 1, col: gridPos.col - 1 };
 	let startOfBottomArc = { row: gridPos.row + 1, col: gridPos.col - 1 };
+
+	// Are these arcs going to connect to something? If not, leave.
+	if (!surroundingPointsConnected(gridPos))
+		return;
 
 	// Do these horizontal arcs already exist? If so, leave.
 	var existingHorizontalArcs = findHorizontalArcsFacingPoint(gridPos);
@@ -222,3 +234,47 @@ function findHorizontalArcsFacingPoint(gridPoint) {
 	return res;
 }
 
+/**
+ * Check if the given grid point is connected to at least one arc or line segment.
+ * @param {Number} row Row coordinate of the grid point.
+ * @param {Number} col Column coordinate of the grid point.
+ * @return {boolean} True if and only if there is at least one arc or line segment connected to the given grid point.
+ */
+function isConnected(row, col) {
+	for (let [id,conn] of connections) {
+		if (conn.row1 === row && conn.col1 === col) {
+			return true;
+		} else if (conn.row2 === row && conn.col2 === col) {
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
+ * Check if the points "diagonally" surrounding a grid point, all have a connection.
+ * In other words, the point above left, the point above right, the point below left, and the point below right.
+ * We do NOT look at the points directly above, below, left, or right of the grid point. (The points "horizontally" and "vertically" surrounding the point).
+ * (Note: we may later update this to NOT count connections towards the grid point itself, not sure if that's required).
+ * @param {Object} gridPoint A grid point (an object with a numeric "row" and "col" property).
+ */
+function surroundingPointsConnected(gridPoint) {
+
+	if (!isConnected(gridPoint.row - 1, gridPoint.col - 1)) {
+		return false;
+	}
+
+	if (!isConnected(gridPoint.row - 1, gridPoint.col + 1)) {
+		return false;
+	}
+
+	if (!isConnected(gridPoint.row + 1, gridPoint.col - 1)) {
+		return false;
+	}
+
+	if (!isConnected(gridPoint.row + 1, gridPoint.col + 1)) {
+		return false;
+	}
+
+	return true;
+}

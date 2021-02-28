@@ -6,7 +6,6 @@ var yScale;
 
 var svgHelper = new SvgHelper();
 
-
 // ********************* Deciding wich operator to use **********************************************************************
 
 var selectedOperation = null;
@@ -87,6 +86,7 @@ function pointToRowAndCol(point) {
 	return { row : Math.round(rowCoor), col: Math.round(colCoor) };
 }
 
+//TODO?- I don't think we need this. And it's making things unnecessarily complicated.
 function erase(svg, gridPos) {
 
 	res = [];
