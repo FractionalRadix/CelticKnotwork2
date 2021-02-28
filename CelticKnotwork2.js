@@ -11,15 +11,44 @@ var svgHelper = new SvgHelper();
 var selectedOperation = null;
 
 function activate_operator(src) {
+
+	var verticalRejoinButton = document.getElementById('VerticalRejoin');
+	var horizontalRejoinButton = document.getElementById('HorizontalRejoin');
+	var crossButton = document.getElementById('Cross');
+
 	switch(src.id) {
 		case "VerticalRejoin":
 			selectedOperation = verticalRejoin;
+
+			verticalRejoinButton.classList.remove('box-unpressed');
+			verticalRejoinButton.classList.add('box-pressed');
+			horizontalRejoinButton.classList.remove('box-pressed');
+			horizontalRejoinButton.classList.add('box-unpressed');
+			crossButton.classList.remove('box-pressed');
+			crossButton.classList.add('box-unpressed');
+
 			break;
 		case "HorizontalRejoin":
 			selectedOperation = horizontalRejoin;
+
+			verticalRejoinButton.classList.remove('box-pressed');
+			verticalRejoinButton.classList.add('box-unpressed');
+			horizontalRejoinButton.classList.remove('box-unpressed');
+			horizontalRejoinButton.classList.add('box-pressed');
+			crossButton.classList.remove('box-pressed');
+			crossButton.classList.add('box-unpressed');
+
 			break;
 		case "Cross":
 			selectedOperation = cross;
+
+			verticalRejoinButton.classList.remove('box-pressed');
+			verticalRejoinButton.classList.add('box-unpressed');
+			horizontalRejoinButton.classList.remove('box-pressed');
+			horizontalRejoinButton.classList.add('box-unpressed');
+			crossButton.classList.remove('box-unpressed');
+			crossButton.classList.add('box-pressed');
+
 			break;
 		default:
 			break;

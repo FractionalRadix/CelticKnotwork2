@@ -11,9 +11,6 @@
 	</script>
 	<style type="text/css">
 .box {
-	#width: 200px;
-	#height: 20px;
-
 	margin: 5px;
 	padding: 5px;
 
@@ -25,6 +22,13 @@
 	color: darkgreen;
 	background-color: lightgreen;
 	font-weight: bold;
+}
+.box-unpressed {
+	box-shadow: 2px 2px darkgray;
+}
+.box-pressed {
+	#box-shadow: -2px -2px lightgray;
+	transform: translate(2px, 2px);
 }
 	</style>
 </head>
@@ -40,9 +44,9 @@
 			<rect x="0" y="0" width="400" height="400" fill="none"/>
 		</svg>
 		<div style="display:flex; flex-direction: row; align-items: center; justify-content: center">
-			<button class="box" onclick="activate_operator(this)" id="VerticalRejoin">Vertical rejoin</button>
-			<button class="box" onclick="activate_operator(this)" id="HorizontalRejoin">Horizontal rejoin</button>
-			<button class="box" onclick="activate_operator(this)" id="Cross">Cross</button>
+			<button class="box box-unpressed" onclick="activate_operator(this)" id="VerticalRejoin">Vertical rejoin</button>
+			<button class="box box-unpressed" onclick="activate_operator(this)" id="HorizontalRejoin">Horizontal rejoin</button>
+			<button class="box box-unpressed" onclick="activate_operator(this)" id="Cross">Cross</button>
 		</div>
     </div>
 </body>
