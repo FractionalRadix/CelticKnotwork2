@@ -21,9 +21,6 @@ function activate_operator(src) {
 		case "Cross":
 			selectedOperation = cross;
 			break;
-		case "Erase":
-			selectedOperation = erase;
-			break;
 		default:
 			break;
 	}
@@ -84,36 +81,6 @@ function pointToRowAndCol(point) {
 	var colCoor = ( point.x - xOffset ) / xScale;
 	var rowCoor = ( point.y - yOffset ) / yScale;
 	return { row : Math.round(rowCoor), col: Math.round(colCoor) };
-}
-
-//TODO?- I don't think we need this. And it's making things unnecessarily complicated.
-function erase(svg, gridPos) {
-
-	res = [];
-
-	// Find all line segments connected to the selected grid point, and add their ID's to the array 'res'.
-	for (let lineSeg of connections) {
-		let test1 = (lineSeg[1].row1 == gridPos.row && lineSeg[1].col1 == gridPos.col);
-		let test2 = (lineSeg[1].row2 == gridPos.row && lineSeg[1].col2 == gridPos.col);
-		if (test1 || test2) {
-			let rowDiff = Math.abs(lineSeg[1].row1 - lineSeg[1].row2);
-			let colDiff = Math.abs(lineSeg[1].col1 - lineSeg[1].col2);
-			if (rowDiff <= 1 && colDiff <= 1) {
-				res.push(lineSeg[0]);
-			}
-		}
-	}
-	massDelete(svg, res);
-
-	// Find vertical arcs surrounding this grid point.
-	// Note that we should still check in which direction they bend!
-	var verticalArcs = findVerticalArcsFacingPoint(gridPos);
-	massDelete(svg, verticalArcs);
-
-	// Find horizontal arcs surrounding this grid point.
-	// Note that we should still check in which direction they bend!
-	var horizontalArcs = findHorizontalArcsFacingPoint(gridPos);
-	massDelete(svg, horizontalArcs);
 }
 
 /**
