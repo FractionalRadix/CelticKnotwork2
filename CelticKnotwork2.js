@@ -20,19 +20,47 @@ var connections = new Map();
 
 function searchConnections(row1, col1, row2, col2) {
 	var res = [];
-	for (let item of connections) {
-		var bool1 = item[1].row1 === row1 && item[1].col1 == col1;
-		var bool2 = item[1].row2 === row2 && item[1].col2 == col2;
+
+	for (let [id,conn] of connections) {
+		var bool1 = conn.row1 === row1 && conn.col1 == col1;
+		var bool2 = conn.row2 === row2 && conn.col2 == col2;
 		if (bool1 && bool2) {
-			res.push(item[0]);
+			res.push(id);
 		}
-		var bool3 = item[1].row1 === row2 && item[1].col1 == col2;
-		var bool4 = item[1].row2 === row1 && item[1].col2 == col1;
+		var bool3 = conn.row1 === row2 && conn.col1 == col2;
+		var bool4 = conn.row2 === row1 && conn.col2 == col1;
 		if (bool3 && bool4) {
-			res.push(item[0]);
+			res.push(id);
+		}
+	}
+
+	return res;
+}
+
+function allLinesConnectedTo(row, col) {
+	var res = [];
+	for (let [id,conn] of connections) {
+		if (conn.row1 === row && conn.col1 === col) {
+			res.push(id);
+		} else if (conn.row2 === row && conn.col2 === col) {
+			res.push(id);
 		}
 	}
 	return res;
+}
+
+
+/**
+ * Given an array of IDs, delete all these arcs  and line segments from the SVG, and remove them from the "connections" map.
+ * @param {Object} svg The SVG that the elements are drawn on.
+ * @param {Array} toBeDeleted An array of integers; each integer is the ID of a connection that will be removed from the SVG, and from the "connections" map.
+ */
+function massDelete(svg, toBeDeleted) {
+	toBeDeleted.forEach( id => {
+		var elt = svg.getElementById(id);
+		svg.removeChild(elt);
+		connections.delete(id);
+	}); 
 }
 
 // ********************* Deciding wich operator to use **********************************************************************
@@ -48,7 +76,7 @@ function activate_operator(src) {
 			selectedOperation = horizontalRejoin;
 			break;
 		case "Cross":
-			//TODO!+ selectedOperation = cross;
+			selectedOperation = cross;
 			break;
 		case "Erase":
 			selectedOperation = erase;
@@ -69,8 +97,8 @@ function main() {
 	// (8,18) (7,18) (8,17) (7,17)
 	// (15,15) (18,18)
 	// Note that for the arcs to work properly, you need an ODD number of rows and an ODD number of columns.
-	const numRows = 17;
-	const numCols = 17;
+	const numRows = 21;
+	const numCols = 21	;
 
 
 	// Automatically scale the grid to the size of the SVG.
@@ -135,21 +163,15 @@ function erase(svg, gridPos) {
 			}
 		}
 	}
+	massDelete(svg, res);
 
 	// Find horizontal arcs surrounding this grid point.
 	// Note that we should still check in which direction they bend!
 	var verticalArcs = findVerticalArcsAroundPoint(gridPos);
-	verticalArcs.forEach(x => res.push(x));
+	massDelete(svg, verticalArcs);
 
 	var horizontalArcs = findHorizontalArcsAroundPoint(gridPos);
-	horizontalArcs.forEach(x => res.push(x));
-
-	// Remove all the elements we found.
-	res.forEach( id => {
-		var elt = svg.getElementById(id);
-		svg.removeChild(elt);
-		connections.delete(id);
-	}); 
+	massDelete(svg, horizontalArcs);
 }
 
 /**
@@ -217,6 +239,8 @@ function findHorizontalArcsAroundPoint(gridPoint) {
 }
 
 function verticalRejoin(svg, gridPos) {
+	console.log("In verticalRejoin(svg, gridPos)");
+
 	let topOfLeftArc = { row : gridPos.row - 1, col : gridPos.col - 1 };
 	let topOfRightArc = { row: gridPos.row - 1, col : gridPos.col + 1 };
 
@@ -227,30 +251,18 @@ function verticalRejoin(svg, gridPos) {
 
 	// Are there already horizontal arcs in this story? If so, remove them.
 	var existingHorizontalArcs = findHorizontalArcsAroundPoint(gridPos);
-	existingHorizontalArcs.forEach( id => {
-		var elt = svg.getElementById(id);
-		svg.removeChild(elt);
-		connections.delete(id);
-	});
+	massDelete(svg, existingHorizontalArcs);
 
 	// Remove any diagonal lines.
-	var lineIDs = [];
+	//TODO?~ Use a nested loops.
 	var lineIDs1 = searchConnections(gridPos.row - 1, gridPos.col - 1, gridPos.row, gridPos.col);
-	lineIDs1.forEach(x => lineIDs.push(x));
+	massDelete(svg, lineIDs1);
 	var lineIDs2 = searchConnections(gridPos.row + 1, gridPos.col + 1, gridPos.row, gridPos.col);
-	lineIDs2.forEach(x => lineIDs.push(x));
+	massDelete(svg, lineIDs2);
 	var lineIDs3 = searchConnections(gridPos.row - 1, gridPos.col + 1, gridPos.row, gridPos.col);
-	lineIDs3.forEach(x => lineIDs.push(x));
+	massDelete(svg, lineIDs3);
 	var lineIDs4 = searchConnections(gridPos.row + 1, gridPos.col - 1, gridPos.row, gridPos.col);
-	lineIDs4.forEach(x => lineIDs.push(x));
-
-	lineIDs.forEach( id => 
-		{
-			var elt = svg.getElementById(id);
-			svg.removeChild(elt);
-			connections.delete(id);
-		}
-	); 
+	massDelete(svg, lineIDs4);
 
 	addForwardsVerticalArc(svg, topOfLeftArc);
 	addBackwardsVerticalArc(svg, topOfRightArc);
@@ -268,31 +280,46 @@ function horizontalRejoin(svg, gridPos) {
 	// Are there already vertical arcs in this story? If so, remove them.
 	var existingVerticalArcs = findVerticalArcsAroundPoint(gridPos);
 	console.log(existingVerticalArcs);
-	existingVerticalArcs.forEach( id => {
-		var elt = svg.getElementById(id);
-		svg.removeChild(elt);
-		connections.delete(id);
-	});
+	massDelete(svg, existingVerticalArcs);
 
 	// Remove any diagonal lines.
-	var lineIDs = [];
+	//TODO?~ Use a nested loops.
 	var lineIDs1 = searchConnections(gridPos.row - 1, gridPos.col - 1, gridPos.row, gridPos.col);
-	lineIDs1.forEach(x => lineIDs.push(x));
+	massDelete(svg, lineIDs1);
 	var lineIDs2 = searchConnections(gridPos.row + 1, gridPos.col + 1, gridPos.row, gridPos.col);
-	lineIDs2.forEach(x => lineIDs.push(x));
+	massDelete(svg, lineIDs2);
 	var lineIDs3 = searchConnections(gridPos.row - 1, gridPos.col + 1, gridPos.row, gridPos.col);
-	lineIDs3.forEach(x => lineIDs.push(x));
+	massDelete(svg, lineIDs3);
 	var lineIDs4 = searchConnections(gridPos.row + 1, gridPos.col - 1, gridPos.row, gridPos.col);
-	lineIDs4.forEach(x => lineIDs.push(x));
-
-	lineIDs.forEach( id => {
-		var elt = svg.getElementById(id);
-		svg.removeChild(elt);
-		connections.delete(id);
-	}); 
+	massDelete(svg, lineIDs4);
 
 	addDownwardsHorizontalArc(svg, startOfTopArc);
 	addUpwardsHorizontalArc(svg, startOfBottomArc);
+}
+
+function cross(svg, gridPoint) {
+
+	console.log("In function 'cross'");
+
+	var toBeDeleted = allLinesConnectedTo(gridPoint);
+	massDelete(svg, toBeDeleted);
+
+	toBeDeleted = findHorizontalArcsAroundPoint(gridPoint);
+	massDelete(svg, toBeDeleted);
+	
+	toBeDeleted = findVerticalArcsAroundPoint(gridPoint);
+	massDelete(svg, toBeDeleted);
+
+	let center = rowAndColToPoint(gridPoint.row, gridPoint.col);
+	
+	for (let rowDelta = - 1; rowDelta <= +1; rowDelta += 2) {
+		for (let colDelta = -1; colDelta <= +1; colDelta += 2) {
+			let corner1onGrid = { row: gridPoint.row + rowDelta, col: gridPoint.col + colDelta };
+			let corner1onSvg  = rowAndColToPoint( corner1onGrid.row, corner1onGrid.col );
+			let id1 = svgHelper.drawLine(svg, center.x, center.y, corner1onSvg.x, corner1onSvg.y,  2, "darkgreen");
+			connections.set(id1, new Connection(gridPoint.row, gridPoint.col, corner1onGrid.row, corner1onGrid.col));
+		}
+	}
 }
 
 /**
