@@ -6,6 +6,19 @@ var yScale;
 
 var svgHelper = new SvgHelper();
 
+// ********************* Single-Line Test ***********************************************************************************
+function single_line_test() {
+	// Algorithm: 
+	//	1. Copy the "connections" list.
+	//	2. Grab the first element from the "connections" list . (Don't use the copy, that one is going to be modified in the process!)
+	//	3. Remove this element from the copy. In fact, remove all, erm, copies of this element from the copy.
+	//	4. Move on to an element connected to the current element. Again, remove all instances from the copy.
+	//	5. Check if you've visted this element before. If so, you don't have a single line.
+
+	//   Follow its line, keeping track of all the elements you encounter.
+	//   If you return to the original element, check if you have as many elements as there are connectoins
+}
+
 // ********************* Deciding wich operator to use **********************************************************************
 
 var selectedOperation = null;
