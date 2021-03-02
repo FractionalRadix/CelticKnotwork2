@@ -4,6 +4,7 @@ var xScale;
 var yOffset;
 var yScale;
 
+var svg;
 var svgHelper = new SvgHelper();
 
 // ********************* Single-Line Test ***********************************************************************************
@@ -13,14 +14,25 @@ function single_line_test() {
 	var key1 = connections.keys().next().value;
 	var conn1 = connections.get(key1);
 
-	console.log("single_line_test: marker 1.");
 	let visited = [key1];
 	do {
-		console.log("single_line_test: marker 2.");
+		console.log(visited);
 		let next = nextLine(key1, conn1.row2, conn1.col2); //TODO!~ Find it if we should (row1,col1) or (row2,col2) !!
+		console.log(next);
 		var visitedBefore = visited.indexOf(next) > -1;
 		visited.push(next);
-		console.log(visited);
+		key1 = next;
+		conn1 = connections.get(key1);
+
+		// Draw it the new connection in red..
+		let start = rowAndColToPoint(conn1.row1, conn1.col1);
+		let end = rowAndColToPoint(conn1.row2, conn1.col2);
+		if (conn1.rowCtrl !== null && conn1.rowCtrl !== undefined && conn1.colCtrl !== null && conn1.colCtrl !== undefined) {
+			let ctrl = rowAndColToPoint(conn1.rowCtrl, conn1.colCtrl);
+			svgHelper.addQuadraticBezierCurve(svg, start, ctrl, end, "red");
+		} else {
+			svgHelper.drawLine(svg, start.x, start.y, end.x, end.y, 2, "red");
+		}
 
 	} while (!visitedBefore);
 
@@ -108,7 +120,7 @@ function activate_operator(src) {
 
 function main() {
 	
-	var svg = document.getElementById('svg1');
+	svg = document.getElementById('svg1');
 
 	// Test case values for (numRows,numCols):
 	// (18,8) (18,7) (17,8) (17,7)
