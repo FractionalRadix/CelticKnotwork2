@@ -152,6 +152,12 @@ function searchConnections(row1, col1, row2, col2) {
 	return res;
 }
 
+/**
+ * Get the ID's of all lines directly connected to a given point on the grid.
+ * @param {Number} row Row coordinate of the grid point.
+ * @param {Number} col Column coordinate of the grid point.
+ * @return {[Number]} An array of ID's of all the arcs and line segments that start or end at the given grid point.
+ */
 function allLinesConnectedTo(row, col) {
 	var res = [];
 	for (let [id,conn] of connections) {

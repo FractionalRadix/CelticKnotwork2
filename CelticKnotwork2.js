@@ -8,17 +8,55 @@ var svgHelper = new SvgHelper();
 
 // ********************* Single-Line Test ***********************************************************************************
 function single_line_test() {
-	// Algorithm: 
-	//	1. Copy the "connections" list.
-	//	2. Grab the first element from the "connections" list . (Don't use the copy, that one is going to be modified in the process!)
-	//	3. Remove this element from the copy. In fact, remove all, erm, copies of this element from the copy.
-	//	4. Move on to an element connected to the current element. Again, remove all instances from the copy.
-	//	5. Check if you've visted this element before. If so, you don't have a single line.
+	
+	// Grab the first connection.
+	var key1 = connections.keys().next().value;
+	var conn1 = connections.get(key1);
 
-	//   Follow its line, keeping track of all the elements you encounter.
-	//   If you return to the original element, check if you have as many elements as there are connectoins
+	console.log("single_line_test: marker 1.");
+	let visited = [key1];
+	do {
+		console.log("single_line_test: marker 2.");
+		let next = nextLine(key1, conn1.row2, conn1.col2); //TODO!~ Find it if we should (row1,col1) or (row2,col2) !!
+		var visitedBefore = visited.indexOf(next) > -1;
+		visited.push(next);
+		console.log(visited);
+
+	} while (!visitedBefore);
+
+	//TODO!+
+
 }
 
+/**
+ * Given a connection (arc or line segment), find the next connection.
+ * The "next" connection is another connection. If there is one that starts with the same slope that the current one ends with, this is the preferred one.
+ * Since all connections by definition have two points, we also point out which point we're looking at.
+ * @param {Number} id ID of the original connection.
+ * @param {Number} startRow Row coordinate of the point whose connections we are interested in.
+ * @param {Number} startCol Column coordinate of the point whose connections we are interested in.
+ * @return {Number} ID of the next connection.
+ */
+function nextLine(id, startRow, startCol) {
+	// Find all connections from our starting point.
+	var connectedLines1 = allLinesConnectedTo(startRow, startCol);
+	// There is ONE connection we will never take: our original connection, the one we started from.
+	// So remove all occurrences of our original connection.
+	var originalLine = connections.get(id);
+	var connectedLines2 = [];
+	for (let key of connectedLines1) {
+		let line = connections.get(key);
+		if (!(line.row1 == originalLine.row1 && line.col1 == originalLine.col1 && line.row2 == originalLine.row2 && line.col2 == originalLine.col2)) {
+			connectedLines2.push(key);	//TODO?  push({id: key, connection: line}) ?
+		}
+	}
+	// At this point, we have a number of connected lines.
+	// We SHOULD select one that starts with the same slope that our original line ends with.
+	// For now, we just grab the first!
+	let selectedLine = connectedLines2[0];
+
+	return selectedLine;
+}
 // ********************* Deciding wich operator to use **********************************************************************
 
 var selectedOperation = null;
