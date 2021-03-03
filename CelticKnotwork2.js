@@ -14,15 +14,30 @@ function single_line_test() {
 	var key1 = connections.keys().next().value;
 	var conn1 = connections.get(key1);
 
+	var prevRow = conn1.row1;
+	var prevCol = conn1.col2;
+
 	let visited = [key1];
 	do {
 		console.log(visited);
-		let next = nextLine(key1, conn1.row2, conn1.col2); //TODO!~ Find it if we should (row1,col1) or (row2,col2) !!
+
+		var curRow, curCol;
+		if (prevRow === conn1.row1 && prevCol === conn1.col1) {
+			curRow = conn1.row2;
+			curCol = conn1.col2;
+		} else /* if prevRow === conn1.row2 && prevCol === conn1.col2 */ {
+			curRow = conn1.row1;
+			curCol = conn1.col1;
+		}
+		let next = nextLine(key1, curRow, curCol); //TODO!~ Find it if we should (row1,col1) or (row2,col2) !!
 		console.log(next);
 		var visitedBefore = visited.indexOf(next) > -1;
 		visited.push(next);
 		key1 = next;
 		conn1 = connections.get(key1);
+
+		prevRow = curRow;
+		prevCol = curCol;
 
 		// Draw it the new connection in red..
 		let start = rowAndColToPoint(conn1.row1, conn1.col1);
