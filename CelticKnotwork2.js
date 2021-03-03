@@ -29,7 +29,7 @@ function single_line_test() {
 			curRow = conn1.row1;
 			curCol = conn1.col1;
 		}
-		let next = nextLine(key1, curRow, curCol); //TODO!~ Find it if we should (row1,col1) or (row2,col2) !!
+		let next = nextLine(key1, curRow, curCol);
 		console.log(next);
 		var visitedBefore = visited.indexOf(next) > -1;
 		visited.push(next);
@@ -40,19 +40,32 @@ function single_line_test() {
 		prevCol = curCol;
 
 		// Draw it the new connection in red..
-		let start = rowAndColToPoint(conn1.row1, conn1.col1);
-		let end = rowAndColToPoint(conn1.row2, conn1.col2);
-		if (conn1.rowCtrl !== null && conn1.rowCtrl !== undefined && conn1.colCtrl !== null && conn1.colCtrl !== undefined) {
-			let ctrl = rowAndColToPoint(conn1.rowCtrl, conn1.colCtrl);
-			svgHelper.addQuadraticBezierCurve(svg, start, ctrl, end, "red");
-		} else {
-			svgHelper.drawLine(svg, start.x, start.y, end.x, end.y, 2, "red");
-		}
+		svgHelper.changeColor(svg, key1, "red");
 
 	} while (!visitedBefore);
 
 	//TODO!+
 
+}
+
+/***
+ * Determine the slope of the given line at the given grid point, modulo 180 degrees.
+ * @param {Number} lineID ID of the arc or line segment.
+ * @param {Number} row Row coordinate of the point where we want to measure the slope; should belong to one of the line's ending points.
+ * @param {Number} col Column coordinate of the point where we want to measure the slope; should belong to one of the line's ending points - the same ending point as the "row" parameter.
+ */
+function slope(lineID, row, col) {
+	//TODO!+
+	// Note that "slope", for our purposes, is two-way: a slope of 45 degrees (Southeast) connects to a slope of 225 degrees (Northwest).
+	// Our slope should be done modulo 180 degrees.
+	var line = connections.get(lineID);
+	if (line.row1 === row && line.col1 === col) {
+		//TODO!+
+	} else {
+		//TODO!+
+	}
+	
+	//TODO!+
 }
 
 /**
@@ -240,7 +253,7 @@ function drawSlashLines(svg, numRows, numCols) {
 			let ptStart = rowAndColToPoint(curRow, curCol);
 			let ptEnd   = rowAndColToPoint(curRow - 1, curCol + 1);
 
-			let id = svgHelper.drawLine(svg, ptStart.x, ptStart.y, ptEnd.x, ptEnd.y, 2, "darkgreen");
+			let id = svgHelper.addLine(svg, ptStart.x, ptStart.y, ptEnd.x, ptEnd.y, "darkgreen", 2);
 
 			connections.set(id, new Connection(curRow, curCol, curRow - 1, curCol + 1));
 		}
@@ -276,7 +289,7 @@ function drawBackslashLines(svg, numRows, numCols) {
 			let startingPoint = rowAndColToPoint(curRow, curCol);
 			let endingPoint = rowAndColToPoint(curRow + 1, curCol + 1);
 		
-			let id = svgHelper.drawLine(svg, startingPoint.x, startingPoint.y, endingPoint.x, endingPoint.y, 2, "darkgreen");
+			let id = svgHelper.addLine(svg, startingPoint.x, startingPoint.y, endingPoint.x, endingPoint.y, "darkgreen", 2);
 
 			connections.set(id, new Connection(curRow, curCol, curRow + 1, curCol + 1));
 		}
@@ -311,7 +324,7 @@ function addUpwardsHorizontalArc(svg, start) {
 	let pt1 = rowAndColToPoint(start.row, start.col);
 	let pt2 = rowAndColToPoint(start.row, start.col + 2);
 	let ctrl = rowAndColToPoint(start.row - 1, start.col + 1);
-	let id = svgHelper.addQuadraticBezierCurve(svg, pt1, ctrl, pt2, "darkgreen");
+	let id = svgHelper.addQuadraticBezierCurve(svg, pt1, ctrl, pt2, "darkgreen", 2);
 	connections.set(id, new Connection(start.row, start.col, start.row, start.col + 2, start.row - 1, start.col + 1 ));
 }
 
@@ -325,7 +338,7 @@ function addDownwardsHorizontalArc(svg, start) {
 	let pt1 = rowAndColToPoint(start.row, start.col);
 	let pt2 = rowAndColToPoint(start.row, start.col + 2);
 	let ctrl = rowAndColToPoint(start.row + 1, start.col + 1);
-	let id = svgHelper.addQuadraticBezierCurve(svg, pt1, ctrl, pt2, "darkgreen");
+	let id = svgHelper.addQuadraticBezierCurve(svg, pt1, ctrl, pt2, "darkgreen", 2);
 	connections.set(id, new Connection(start.row, start.col, start.row, start.col + 2, start.row + 1, start.col + 1));
 }
 
@@ -339,7 +352,7 @@ function addBackwardsVerticalArc(svg, start) {
 	let pt1 = rowAndColToPoint(start.row, start.col);
 	let pt2 = rowAndColToPoint(start.row + 2, start.col);
 	let ctrl = rowAndColToPoint(start.row + 1, start.col - 1);
-	let id = svgHelper.addQuadraticBezierCurve(svg, pt1, ctrl, pt2, "darkgreen");
+	let id = svgHelper.addQuadraticBezierCurve(svg, pt1, ctrl, pt2, "darkgreen", 2);
 	connections.set(id, new Connection(start.row, start.col, start.row + 2, start.col, start.row + 1, start.col - 1));
 }
 
@@ -353,7 +366,7 @@ function addForwardsVerticalArc(svg, start) {
 	let pt1 = rowAndColToPoint(start.row, start.col);
 	let pt2 = rowAndColToPoint(start.row + 2, start.col);
 	let ctrl = rowAndColToPoint(start.row + 1, start.col + 1);
-	let id = svgHelper.addQuadraticBezierCurve(svg, pt1, ctrl, pt2, "darkgreen");
+	let id = svgHelper.addQuadraticBezierCurve(svg, pt1, ctrl, pt2, "darkgreen",2 );
 	connections.set(id, new Connection(start.row, start.col, start.row + 2, start.col, start.row + 1, start.col + 1));
 }
 

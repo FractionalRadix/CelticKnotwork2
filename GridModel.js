@@ -60,7 +60,7 @@ function cross(svg, gridPoint) {
 		for (let colDelta = -1; colDelta <= +1; colDelta += 2) {
 			let corner1onGrid = { row: gridPoint.row + rowDelta, col: gridPoint.col + colDelta };
 			let corner1onSvg  = rowAndColToPoint( corner1onGrid.row, corner1onGrid.col );
-			let id1 = svgHelper.drawLine(svg, center.x, center.y, corner1onSvg.x, corner1onSvg.y,  2, "darkgreen");
+			let id1 = svgHelper.addLine(svg, center.x, center.y, corner1onSvg.x, corner1onSvg.y, "darkgreen", 2);
 			connections.set(id1, new Connection(gridPoint.row, gridPoint.col, corner1onGrid.row, corner1onGrid.col));
 		}
 	}
