@@ -58,14 +58,46 @@ function slope(lineID, row, col) {
 	//TODO!+
 	// Note that "slope", for our purposes, is two-way: a slope of 45 degrees (Southeast) connects to a slope of 225 degrees (Northwest).
 	// Our slope should be done modulo 180 degrees.
+
+	console.log("slope("+lineID+","+row+","+col+")");
 	var line = connections.get(lineID);
+	var startRow, startCol, endRow, endCol;
 	if (line.row1 === row && line.col1 === col) {
-		//TODO!+
-	} else {
-		//TODO!+
+		startRow = line.row1;
+		startCol = line.col1;
+		endRow = line.row2;
+		endCol = line.col2;
+	} else { // line.row2 == row && line.col2 == col 
+		startRow = line.row2;
+		startCol = line.col2;
+		endRow = line.row1;
+		endCol = line.col1;
 	}
-	
-	//TODO!+
+
+	console.log("Calculating slope for ("+startCol+","+startRow+")-("+endCol+","+endRow+")");
+		
+	if (line.rowCtrl === null || line.rowCtrl === undefined) {
+		// It's a diagonal.
+		return slopeOfDiagonal(startCol, startRow, endCol, endRow);
+	} else {
+		// It's a curve.
+		if (line.row1 === line.row2) {
+			// It's a horizontal curve.
+			//TODO!+
+			return 1; //TODO!~
+		} else if (line.col1 === line.col2) {
+			// It's a vertical curve.
+			//TODO!+
+			return 1; //TODO!~
+		}
+	}
+}
+
+function slopeOfDiagonal(x1, y1, x2, y2) {
+	var dy = y1 - y2; // Normally you'd use line.row2-line.row1, but in SVG and most other computer graphics, a higher y value is a lower row... so it must be inverted.
+	var dx = x2 - x1;
+	var slope = dy / dx; //TODO?~ Handle the unlikely case that dx===0 ?
+	return slope;
 }
 
 /**
@@ -78,6 +110,7 @@ function slope(lineID, row, col) {
  * @return {Number} ID of the next connection.
  */
 function nextLine(id, startRow, startCol) {
+	console.log("nextLine("+id+","+startRow+","+startCol+")");
 	// Find all connections from our starting point.
 	var connectedLines1 = allLinesConnectedTo(startRow, startCol);
 	// There is ONE connection we will never take: our original connection, the one we started from.
@@ -90,10 +123,29 @@ function nextLine(id, startRow, startCol) {
 			connectedLines2.push(key);	//TODO?  push({id: key, connection: line}) ?
 		}
 	}
+
+	console.log("Nr of connected lines: "+connectedLines2.length);
 	// At this point, we have a number of connected lines.
-	// We SHOULD select one that starts with the same slope that our original line ends with.
-	// For now, we just grab the first!
-	let selectedLine = connectedLines2[0];
+	// IF we have a connected line with the same slope, we should select that.
+	// If there is no such line, we may have secondary constraints; for now, if we encounter that case, we just grab the first connected line available.
+	let selectedLine = null;
+
+	var slope1 = slope(id, startRow, startCol);
+	console.log("slope1==="+slope1);
+	for (let i = 0; i < connectedLines2.length; i++) {
+		console.log("connectedLines2["+i+"]==="+connectedLines2[i]);
+		var slope2 = slope(connectedLines2[i], startRow, startCol);
+		if (slope1 === slope2) {
+			console.log("slope==="+slope1+", slope2==="+slope2);
+			selectedLine = connectedLines2[i];
+			break;
+		}
+	}
+	//TODO?~ Find out if there are other reasons to give a connected line priority, when there is no connected line that has the same slope as the one we came from.
+	if (selectedLine === null) {
+		selectedLine = connectedLines2[0];
+	}
+
 
 	return selectedLine;
 }
