@@ -81,11 +81,18 @@ function slope(lineID, row, col) {
 		return slopeOfDiagonal(startCol, startRow, endCol, endRow);
 	} else {
 		// It's a curve.
-		if (line.row1 === line.row2) {
+		if (startRow === endRow) {
 			// It's a horizontal curve.
-			//TODO!+
-			return 1; //TODO!~
-		} else if (line.col1 === line.col2) {
+			if (line.rowCtrl > startRow) {
+				// Control point on a row with a higher number, means the curve bends downwards.
+				// It is -1 if endCol > startCol, +1 if endCol < startCol. Note that we should never have line.col1 === line.col2 here.
+				return (endCol > startCol) ? -1 : +1;
+			} else { // line.rowCtrl < startRow. Note that we should NOT ever get line.rowCtrl === line.row2. We're supposed to have a curve, not a flat line.
+				// Control point on a row with a lesser numer, means the curve bends upwards.
+				// It is +1 if endCol > startCol, -1 if endCol < startCol. Note that we should never have line.col1 === line.col2 here.
+				return (endCol > startCol) ? +1 : -1;
+			}
+		} else if (startCol === endCol) {
 			// It's a vertical curve.
 			//TODO!+
 			return 1; //TODO!~
@@ -93,8 +100,10 @@ function slope(lineID, row, col) {
 	}
 }
 
+//TODO!~ Don't let this method compensate for the upside-down approach of a computer.
+// Let the caller do that.
 function slopeOfDiagonal(x1, y1, x2, y2) {
-	var dy = y1 - y2; // Normally you'd use line.row2-line.row1, but in SVG and most other computer graphics, a higher y value is a lower row... so it must be inverted.
+	var dy = y1 - y2; // Normally you'd use y2 - y1, but in SVG and most other computer graphics, a higher y value is a lower row... so it must be inverted.
 	var dx = x2 - x1;
 	var slope = dy / dx; //TODO?~ Handle the unlikely case that dx===0 ?
 	return slope;
