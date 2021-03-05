@@ -7,6 +7,8 @@
 	</script>
 	<script type="text/javascript" src="GridModel.js">
 	</script>
+	<script type="text/javascript" src="SingleLineTest.js">
+	</script>
 	<script type="text/javascript" src="CelticKnotwork2.js">
 	</script>
 	<style type="text/css">
@@ -30,6 +32,12 @@
 	#box-shadow: -2px -2px lightgray;
 	transform: translate(2px, 2px);
 }
+.button-panel {
+	background-color: lightgray;
+	border: 3px; 
+	border-color: darkgray; 
+	border-style: solid;
+}
 	</style>
 </head>
 <body style="background-color: darkgreen; color: white;" onload="main()">
@@ -43,12 +51,12 @@
 			<!-- An inner rect is necessary to give JavaScript access to the width and height, using getBBox(). -->
 			<rect x="0" y="0" width="400" height="400" fill="none"/>
 		</svg>
-		<div style="display:flex; flex-direction: row; align-items: center; justify-content: center; background-color: #40FF40">
+		<div class="button-panel" style="display:flex; flex-direction: row; align-items: center; justify-content: center;">
 			<button class="box box-unpressed" onclick="activate_operator(this)" id="VerticalRejoin">Vertical rejoin</button>
 			<button class="box box-unpressed" onclick="activate_operator(this)" id="HorizontalRejoin">Horizontal rejoin</button>
 			<button class="box box-unpressed" onclick="activate_operator(this)" id="Cross">Cross</button>
 		</div>
-		<div style="display:flex; flex-directoin: row; align-items: center: justify-content: center">
+		<div style="display:flex; flex-direction: row; align-items: center: justify-content: center">
 			<button class="box" onclick="single_line_test()" id="SingleLineTest">Single Line Test</button>
 		</div>
     </div>
