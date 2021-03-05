@@ -53,9 +53,10 @@ function single_line_test() {
  * @param {Number} lineID ID of the arc or line segment.
  * @param {Number} row Row coordinate of the point where we want to measure the slope; should belong to one of the line's ending points.
  * @param {Number} col Column coordinate of the point where we want to measure the slope; should belong to one of the line's ending points - the same ending point as the "row" parameter.
+ * @return {Number} A number indicating the slope of the line at the given point; that is, it's delta-y divided by it's delta-x.
  */
 function slope(lineID, row, col) {
-	//TODO!+
+
 	// Note that "slope", for our purposes, is two-way: a slope of 45 degrees (Southeast) connects to a slope of 225 degrees (Northwest).
 	// Our slope should be done modulo 180 degrees.
 
@@ -86,16 +87,31 @@ function slope(lineID, row, col) {
 			if (line.rowCtrl > startRow) {
 				// Control point on a row with a higher number, means the curve bends downwards.
 				// It is -1 if endCol > startCol, +1 if endCol < startCol. Note that we should never have line.col1 === line.col2 here.
+				// (Note that the angle is always a multiple of 45 degrees - if we ever change that, we'll need a more involved calculation of the slope at the start/end of a Bézier curve).
 				return (endCol > startCol) ? -1 : +1;
 			} else { // line.rowCtrl < startRow. Note that we should NOT ever get line.rowCtrl === line.row2. We're supposed to have a curve, not a flat line.
 				// Control point on a row with a lesser numer, means the curve bends upwards.
 				// It is +1 if endCol > startCol, -1 if endCol < startCol. Note that we should never have line.col1 === line.col2 here.
+				// (Note that the angle is always a multiple of 45 degrees - if we ever change that, we'll need a more involved calculation of the slope at the start/end of a Bézier curve).
 				return (endCol > startCol) ? +1 : -1;
 			}
 		} else if (startCol === endCol) {
 			// It's a vertical curve.
-			//TODO!+
-			return 1; //TODO!~
+			if (line.colCtrl > startCol) {
+				// Control point on a column with a higher number, means the curve bends towards the right.
+				// If startRow > endRow, we are at the bottom of this curve, and the slope is 45 degrees (+1).
+				// If startRow < endRow, we are at the top of this curve, and the slope is -45 degrees (-1).
+				// Note that startRow !== endRow; if this happens, we have a point, not a line.
+				// Also note that the angle is always a multiple of 45 degrees - if we ever change that, we'll need a more involved calculation of the slope at the start/end of a Bézier curve.
+				return (startRow > endRow ) ? +1 : -1;
+			} else { // if line.colCtrol < startCol
+				// Control point on a column with a lower number, means the curve ends towards the left.
+				// If startRow > endRow, we are at the bottom of the curve, and the slope is 135 degrees (-1).
+				// If startRow < endRow, we are at the top of the curve, and the slope is -225 degrees (+1).
+				// Note that startRow !== endRow; if this happens, we have a point, not a line.
+				// Also note that the angle is always a multiple of 45 degrees - if we ever change that, we'll need a more involved calculation of the slope at the start/end of a Bézier curve.
+				return (startRow > endRow) ? - 1 : +1;
+			}
 		}
 	}
 }
