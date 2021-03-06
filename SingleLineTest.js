@@ -14,6 +14,7 @@ function singleLine( ) {
 
 	// Expose the "test" function to the outside.
 	singleLine.test = test;
+	singleLine.stopSingleLineTest = stopSingleLineTest;
 
 	function test() {
 		
@@ -27,15 +28,25 @@ function singleLine( ) {
 		visited = [key1];
 
 		timerID = setInterval(single_line_test_step, 250);
-		//TODO!~ call clearInterval(timerId) as soon as "visitedBefore" becomes "true", or the user takes an action unrelated to the single-line test.
-		/*
-		do {
-			var visitedBefore = single_line_test_step();
-		} while (!visitedBefore);
-		*/
 
 		//TODO?+ Add a check if all lines have been visited?
 
+	}
+
+	function stopSingleLineTest( ) {
+		if (timerID !== undefined && timerID !== null) {
+			clearInterval(timerID);
+			timerID = null;
+
+			//TODO?+ Recolor the whole thing back to dark green?
+			allLinesDarkGreen();
+		}
+	}
+
+	function allLinesDarkGreen() {
+		for (let [connectionID, connection] of connections) {
+			svgHelper.changeColor(svg, connectionID, "darkgreen");
+		}
 	}
 
 	/**
@@ -72,6 +83,7 @@ function singleLine( ) {
 		if (visitedBefore) {
 			clearInterval(timerID);
 		}
+
 		return visitedBefore;
 	}
 

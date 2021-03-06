@@ -7,12 +7,6 @@ var yScale;
 var svg;
 var svgHelper = new SvgHelper();
 
-function allLinesDarkGreen() {
-	for (let line of connections) {
-		//TODO!+
-	}
-}
-
 // ********************* Deciding wich operator to use **********************************************************************
 
 var selectedOperation = null;
@@ -74,6 +68,10 @@ function main() {
 	const numRows = 23;
 	const numCols = 23;
 
+	// Initialize the "single line test". 
+	// This is necessary to expose its "public" functions.
+	//TODO?~ Change it into a class?
+	singleLine();
 
 	// Automatically scale the grid to the size of the SVG.
 	var bBox = svg1.getBBox();
@@ -97,6 +95,7 @@ function main() {
 		var gridPos = pointToRowAndCol(mousePos);
 
 		if (selectedOperation !== null) {
+			singleLine.stopSingleLineTest();
 			selectedOperation(svg, gridPos);
 		}
 	});

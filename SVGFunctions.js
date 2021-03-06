@@ -73,9 +73,7 @@ class SvgHelper {
 	}
 
 	changeColor(svg, id, newColor) {
-		console.log("changeColor: id===="+id);
 		var elt = svg.getElementById(id);
-		console.log("elt==="+elt);
 		elt.style.stroke = newColor;
 	}
 
