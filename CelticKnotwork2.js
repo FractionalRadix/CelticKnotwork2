@@ -56,6 +56,57 @@ function activate_operator(src) {
 	}
 }
 
+
+/**
+ * When the user wishes to "download" the stick figure, grab it and attach it to an invisible link element.
+ * Then click the invisible link element.
+ */
+function download() {
+	var link = document.createElement('a');
+	link.download = '' ;
+
+	//var pose = view1.exportPose(view1.rootView, 0);
+	var lines = [];
+	for (let [id,line] of connections) {
+		curElt = svg.getElementById(id);
+		if (curElt instanceof SVGLineElement) {
+			let x1 = curElt.getAttribute("x1");
+			let y1 = curElt.getAttribute("y1");
+			let x2 = curElt.getAttribute("x2");
+			let y2 = curElt.getAttribute("y2");
+			lines.push('    <line x1="'+x1+'" y1="'+y1+'" x2="' + x2 + '" y2="' +y2+'" stroke="black" stroke-width="1"/>\n');
+		} else if (curElt instanceof SVGPathElement) {
+			let d = curElt.getAttribute("d");
+			lines.push('    <path d="'+d+'" fill="none" stroke="black" stroke-width="1"/>\n');
+		}
+	}
+
+
+	//TODO!~ Get this from the SVG...
+	var width = 400, height = 400;
+
+	var blob;
+	var str01 = '<!DOCTYPE html>\r\n';
+	var str02 = '<html lang="en">\r\n';
+	var str03 = '<head>\r\n';
+	var str04 = '  <meta charset="UTF-8">\r\n';
+	var str05 = '</head>\r\n';
+	var str06 = '<body>\r\n';
+	var str07 = '  <svg width="' + width + '" height="'+ height + '">\r\n';
+
+	var str08 = lines + '\r\n';
+
+	var str09 = '  </svg>\r\n';
+	var str10 = '</body>\r\n';
+	var str11 = '</html>';
+
+	blob = new Blob([str01, str02, str03, str04, str05, str06, str07, str08, str09, str10, str11], { type: 'text/html'} );
+	var url = URL.createObjectURL(blob);
+	link.href = url;
+	link.click();
+	URL.revokeObjectURL(link.href);
+}
+
 function main() {
 	
 	svg = document.getElementById('svg1');
