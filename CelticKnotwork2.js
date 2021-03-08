@@ -116,8 +116,8 @@ function main() {
 	// (8,18) (7,18) (8,17) (7,17)
 	// (15,15) (18,18)
 	// Note that for the arcs to work properly, you need an ODD number of rows and an ODD number of columns.
-	const numRows = 23;
-	const numCols = 23;
+	const numRows = 21;
+	const numCols = 21;
 
 	// Initialize the "single line test". 
 	// This is necessary to expose its "public" functions.
@@ -132,6 +132,13 @@ function main() {
 	const heightWithoutPadding = bBox.height - 2 * yOffset;
 	xScale = widthWithoutPadding / (numCols + 1);
 	yScale = heightWithoutPadding / (numRows + 1);
+
+	//TODO?~ Always have squares, instead of also allowing (non-square) rectangles.
+	//TODO?~ If we do this, we should also center the figure.
+	let scale = Math.min(xScale, yScale);
+	xScale = scale;
+	yScale = scale;
+
 
 	// Source: https://www.petercollingridge.co.uk/tutorials/svg/interactive/dragging/
 	function getMousePosition(evt) {

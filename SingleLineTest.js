@@ -27,7 +27,7 @@ function singleLine( ) {
 
 		visited = [key1];
 
-		timerID = setInterval(single_line_test_step, 250);
+		timerID = setInterval(single_line_test_step, 100);
 
 		//TODO?+ Add a check if all lines have been visited?
 
