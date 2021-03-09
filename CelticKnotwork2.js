@@ -116,8 +116,8 @@ function main() {
 	// (8,18) (7,18) (8,17) (7,17)
 	// (15,15) (18,18)
 	// Note that for the arcs to work properly, you need an ODD number of rows and an ODD number of columns.
-	const numRows = 21;
-	const numCols = 21;
+	let numRows = 21;
+	let numCols = 21;
 
 	// Initialize the "single line test". 
 	// This is necessary to expose its "public" functions.
@@ -139,6 +139,28 @@ function main() {
 	xScale = scale;
 	yScale = scale;
 
+	let rowSelector = document.getElementById("nrOfRows");
+	//rowSelector.addEventListener('input', function(evt) {
+	//	numRows = evt.target.value;
+	//});
+	rowSelector.addEventListener('input', getRowsFromInput);
+	function getRowsFromInput() {
+		let rowInput = document.getElementById("nrOfRows");
+		nrOfRows = rowInput.value;
+	}
+	let colSelector = document.getElementById("nrOfCols");
+	//colSelector.addEventListener('input', function(evt) {
+	//	console.log("Nr of cols: "+evt.target.value);
+	//	numCols = evt.target.value;
+	//});
+	colSelector.addEventListener('input', getColumnsFromInput);
+	function getColumnsFromInput() {
+		let colInput = document.getElementById("nrOfCols");
+		nrOfCols = colInput.value;
+	}
+	//TODO!+ Add a button to make the resize effective.
+	//	Note that this may undo your entire knotwork so far...
+	//	Maybe find a way around that so you can resize dynamically without problems?
 
 	// Source: https://www.petercollingridge.co.uk/tutorials/svg/interactive/dragging/
 	function getMousePosition(evt) {

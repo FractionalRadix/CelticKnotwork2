@@ -47,6 +47,11 @@
 		This was inspired by the elaborate knotwork found in ancient Celtic art.<br/>
 		Can you create intricate designs like the ancient Celts? Give it a try!</br/>
 		<p/>
+		<label for="nrOfRows" class="box">Nr of rows:</label>
+		<input type="number" id="nrOfRows" class="box" min="5" max="40" value="21">
+		<label for="nrOfCols" class="box">Nr of columns:</label>
+		<input type="number" id="nrOfCols" class="box" min="5" max="40" value="21">
+		<p/>
 		<svg id="svg1" width="400" height="400" style="display: flex" class="box">
 			<!-- An inner rect is necessary to give JavaScript access to the width and height, using getBBox(). -->
 			<rect x="0" y="0" width="400" height="400" fill="none"/>
