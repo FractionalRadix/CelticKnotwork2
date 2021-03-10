@@ -118,6 +118,8 @@ function main() {
 	// Note that for the arcs to work properly, you need an ODD number of rows and an ODD number of columns.
 	let numRows = 21;
 	let numCols = 21;
+	//TODO?~ Assign numRows and numCols from the HTML, using getRowsFromInput and getColumnsFromInput ?
+	// Or perhaps the HTML should get those values from the CODE, instead... of course once the app is started it's the input values on the page that are leading...
 
 	// Initialize the "single line test". 
 	// This is necessary to expose its "public" functions.
