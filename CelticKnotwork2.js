@@ -142,23 +142,28 @@ function main() {
 	yScale = scale;
 
 	let rowSelector = document.getElementById("nrOfRows");
-	//rowSelector.addEventListener('input', function(evt) {
-	//	numRows = evt.target.value;
-	//});
-	rowSelector.addEventListener('input', getRowsFromInput);
+	if (rowSelector !== undefined && rowSelector !== null) {
+		rowSelector.addEventListener('input', getRowsFromInput);
+	}
 	function getRowsFromInput() {
 		let rowInput = document.getElementById("nrOfRows");
-		nrOfRows = rowInput.value;
+		if (rowInput === undefined || rowInput === null) {
+			nrOfRows = 21
+		} else {
+			nrOfRows = rowInput.value;
+		}
 	}
 	let colSelector = document.getElementById("nrOfCols");
-	//colSelector.addEventListener('input', function(evt) {
-	//	console.log("Nr of cols: "+evt.target.value);
-	//	numCols = evt.target.value;
-	//});
-	colSelector.addEventListener('input', getColumnsFromInput);
+	if (colSelector !== undefined && colSelector !== null) {
+		colSelector.addEventListener('input', getColumnsFromInput);
+	}
 	function getColumnsFromInput() {
 		let colInput = document.getElementById("nrOfCols");
-		nrOfCols = colInput.value;
+		if (colInput === undefined || colInput === null) {
+			nrOfCols = 21;
+		} else {
+			nrOfCols = colInput.value;
+		}
 	}
 	//TODO!+ Add a button to make the resize effective.
 	//	Note that this may undo your entire knotwork so far...
