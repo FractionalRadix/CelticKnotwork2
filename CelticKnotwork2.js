@@ -56,9 +56,10 @@ function activate_operator(src) {
 	}
 }
 
+// ********************* Download functionality *****************************************************************************
 
 /**
- * When the user wishes to "download" the stick figure, grab it and attach it to an invisible link element.
+ * When the user wishes to "download" the knotwork, grab it and attach it to an invisible link element.
  * Then click the invisible link element.
  */
 function download() {
@@ -107,6 +108,8 @@ function download() {
 	URL.revokeObjectURL(link.href);
 }
 
+// ********************* Main operations ************************************************************************************
+
 function main() {
 	
 	svg = document.getElementById('svg1');
@@ -153,6 +156,7 @@ function main() {
 			nrOfRows = rowInput.value;
 		}
 	}
+
 	let colSelector = document.getElementById("nrOfCols");
 	if (colSelector !== undefined && colSelector !== null) {
 		colSelector.addEventListener('input', getColumnsFromInput);
